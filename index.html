@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Instant Q&A Practice</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #setupArea {
+      font-size: 22px;
+      line-height: 1.9;
+    }
+
+    #instructions {
+      max-width: 620px;
+      margin: 30px auto;
+      text-align: left;
+    }
+
+    #timeGuide {
+      margin: 24px 0;
+      font-size: 23px;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 14px 26px;
+      margin: 12px;
+      cursor: pointer;
+    }
+
+    #counter {
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    #question {
+      font-size: 34px;
+      margin: 45px 0;
+      min-height: 80px;
+    }
+
+    #phase {
+      font-size: 22px;
+      margin: 20px 0;
+    }
+
+    #timer {
+      font-size: 54px;
+      font-weight: bold;
+      margin: 25px 0;
+    }
+
+    #recordingStatus {
+      font-size: 18px;
+      margin: 15px 0;
+    }
+
+    #answerReview {
+      display: none;
+      margin-top: 35px;
+      text-align: left;
+    }
+
+    .reviewItem {
+      padding: 22px 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .reviewQuestion {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-top: 12px;
+    }
+
+    .box {
+      background: #f5f5f5;
+      padding: 12px;
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    #errorMessage {
+      color: #b00020;
+      font-size: 17px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="setupArea">
+
+  <h2>Instant Q&A Practice</h2>
+
+  <div id="instructions">
+    10問を連続で練習します。<br>
+    まず6秒で質問の内容を確認してください。<br>
+    その後、10秒で英語で答えましょう。
+
+    <div id="timeGuide">
+      ・最初の6秒：質問を読む時間<br>
+      ・次の10秒：質問に答える時間
+    </div>
+
+    16秒たつと、自動的に次の問題へ進みます。<br>
+    10問すべて終わった後に、解答例を確認できます。
+  </div>
+
+  <p><strong>準備ができたら「開始」を押してください。</strong></p>
+
+  <button id="startButton">開始</button>
+
+  <div>
+    ※開始時にマイクの使用を許可してください。
+  </div>
+
+  <div id="errorMessage"></div>
+
+</div>
+
+
+<div id="practiceArea" style="display:none;">
+
+  <div id="counter"></div>
+
+  <div id="question"></div>
+
+  <div id="phase"></div>
+
+  <div id="timer"></div>
+
+  <div id="recordingStatus"></div>
+
+  <button id="stopButton">中断する</button>
+
+</div>
+
+
+<div id="finishArea" style="display:none;">
+
+  <h2 id="finishTitle">10問終了しました</h2>
+
+  <button id="reviewButton">回答を確認する</button>
+  <button id="restartButton">もう一度</button>
+
+  <div id="answerReview"></div>
+
+</div>
+
+
+<script>
+
+const questions = [
+  {
+    question: "What's your favorite season?",
+    answer: "My favorite season is autumn. The weather is cool and comfortable. I also enjoy seeing the beautiful autumn leaves."
+  },
+  {
+    question: "What kind of weather do you like?",
+    answer: "I like warm and sunny weather. It makes me feel active and cheerful. I often go for a walk on sunny days."
+  },
+  {
+    question: "Do you like reading books?",
+    answer: "Yes, I do. I usually read books before going to bed. Reading helps me relax and learn new things."
+  },
+  {
+    question: "What's your favorite food?",
+    answer: "My favorite food is sushi. I especially like salmon and tuna. I usually eat sushi with my family on weekends."
+  },
+  {
+    question: "Which do you prefer, coffee or tea?",
+    answer: "I prefer coffee. I usually drink it in the morning. A cup of coffee helps me wake up and start my day."
+  },
+  {
+    question: "Are you a dog person or a cat person?",
+    answer: "I am a dog person. Dogs are friendly and fun to be with. I used to have a dog when I was younger."
+  },
+  {
+    question: "Do you have a favorite sport?",
+    answer: "Yes, my favorite sport is tennis. I enjoy both playing and watching it. I sometimes play tennis with my friends on weekends."
+  },
+  {
+    question: "Do you have a favorite TV show or movie?",
+    answer: "Yes, I like comedy movies. They help me forget about work and relax. I often watch them at home on weekends."
+  },
+  {
+    question: "What was your favorite subject in school?",
+    answer: "My favorite subject was history. I enjoyed learning about different countries and people. It helped me understand the world better."
+  },
+  {
+    question: "Is there a celebrity you really like?",
+    answer: "Yes, I really like a famous tennis player. I admire his hard work and positive attitude. I enjoy watching his matches."
+  }
+];
+
+let current = 0;
+let timerId = null;
+
+let mediaStream = null;
+let mediaRecorder = null;
+let audioChunks = [];
+
+let recognition = null;
+let currentTranscript = "";
+
+let results = [];
+let interrupted = false;
+let isEndingAnswer = false;
+
+const PREP_SECONDS = 6;
+const ANSWER_SECONDS = 10;
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+const setupArea = document.getElementById("setupArea");
+const practiceArea = document.getElementById("practiceArea");
+const finishArea = document.getElementById("finishArea");
+
+const startButton = document.getElementById("startButton");
+const stopButton = document.getElementById("stopButton");
+
+const counterDisplay = document.getElementById("counter");
+const questionDisplay = document.getElementById("question");
+const phaseDisplay = document.getElementById("phase");
+const timerDisplay = document.getElementById("timer");
+const recordingStatus = document.getElementById("recordingStatus");
+
+const finishTitle = document.getElementById("finishTitle");
+const errorMessage = document.getElementById("errorMessage");
+
+
+startButton.addEventListener("click", async () => {
+
+  errorMessage.textContent = "";
+  startButton.disabled = true;
+
+  try {
+
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
+
+  } catch (error) {
+
+    errorMessage.textContent =
+      "マイクを使用できません。ブラウザでマイクの使用を許可してください。";
+
+    startButton.disabled = false;
+    return;
+  }
+
+  clearOldResults();
+
+  current = 0;
+  results = [];
+  interrupted = false;
+
+  setupArea.style.display = "none";
+  finishArea.style.display = "none";
+  practiceArea.style.display = "block";
+
+  startQuestion();
+
+});
+
+
+function startQuestion() {
+
+  clearInterval(timerId);
+
+  if (interrupted) return;
+
+  if (current >= questions.length) {
+    finishPractice();
+    return;
+  }
+
+  counterDisplay.textContent =
+    "Q" + (current + 1) + " / " + questions.length;
+
+  questionDisplay.textContent =
+    questions[current].question;
+
+  recordingStatus.textContent = "";
+
+  startPrepTime();
+
+}
+
+
+function startPrepTime() {
+
+  let remaining = PREP_SECONDS;
+
+  phaseDisplay.textContent = "質問を読む時間";
+  timerDisplay.textContent = remaining;
+
+  timerId = setInterval(() => {
+
+    remaining--;
+
+    timerDisplay.textContent = remaining;
+
+    if (remaining <= 0) {
+
+      clearInterval(timerId);
+
+      startAnswerTime();
+
+    }
+
+  }, 1000);
+
+}
+
+
+function startAnswerTime() {
+
+  let remaining = ANSWER_SECONDS;
+
+  isEndingAnswer = false;
+  currentTranscript = "";
+  audioChunks = [];
+
+  phaseDisplay.textContent = "回答時間";
+  timerDisplay.textContent = remaining;
+
+  startRecording();
+  startRecognition();
+
+  timerId = setInterval(() => {
+
+    remaining--;
+
+    timerDisplay.textContent = remaining;
+
+    if (remaining <= 0) {
+
+      clearInterval(timerId);
+
+      finishCurrentAnswer();
+
+    }
+
+  }, 1000);
+
+}
+
+
+function startRecording() {
+
+  try {
+
+    mediaRecorder = new MediaRecorder(mediaStream);
+
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = event => {
+
+      if (event.data && event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+
+    };
+
+    mediaRecorder.start();
+
+    recordingStatus.textContent = "● 録音中";
+
+  } catch (error) {
+
+    recordingStatus.textContent =
+      "録音を開始できませんでした。";
+
+  }
+
+}
+
+
+function startRecognition() {
+
+  if (!SpeechRecognition) {
+
+    recordingStatus.textContent +=
+      "　※このブラウザでは文字起こしに対応していません。";
+
+    return;
+  }
+
+  try {
+
+    recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = event => {
+
+      let text = "";
+
+      for (let i = 0; i < event.results.length; i++) {
+
+        if (event.results[i][0]) {
+          text += event.results[i][0].transcript + " ";
+        }
+
+      }
+
+      currentTranscript = text.trim();
+
+    };
+
+    recognition.start();
+
+  } catch (error) {
+
+    console.log("Speech recognition error");
+
+  }
+
+}
+
+
+function finishCurrentAnswer() {
+
+  if (isEndingAnswer) return;
+
+  isEndingAnswer = true;
+
+  recordingStatus.textContent = "";
+
+  if (recognition) {
+
+    try {
+      recognition.stop();
+    } catch (error) {}
+
+  }
+
+  recognition = null;
+
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !== "inactive"
+  ) {
+
+    mediaRecorder.onstop = () => {
+
+      saveCurrentResult();
+      moveToNextQuestion();
+
+    };
+
+    mediaRecorder.stop();
+
+  } else {
+
+    saveCurrentResult();
+    moveToNextQuestion();
+
+  }
+
+}
+
+
+function saveCurrentResult() {
+
+  let audioUrl = null;
+
+  if (audioChunks.length > 0) {
+
+    const mimeType =
+      mediaRecorder && mediaRecorder.mimeType
+        ? mediaRecorder.mimeType
+        : "audio/webm";
+
+    const audioBlob =
+      new Blob(audioChunks, { type: mimeType });
+
+    audioUrl =
+      URL.createObjectURL(audioBlob);
+
+  }
+
+  results.push({
+    question: questions[current].question,
+    transcript: currentTranscript,
+    modelAnswer: questions[current].answer,
+    audioUrl: audioUrl
+  });
+
+}
+
+
+function moveToNextQuestion() {
+
+  if (interrupted) return;
+
+  current++;
+  startQuestion();
+
+}
+
+
+stopButton.addEventListener("click", () => {
+
+  interrupted = true;
+
+  clearInterval(timerId);
+
+  if (recognition) {
+
+    try {
+      recognition.abort();
+    } catch (error) {}
+
+  }
+
+  recognition = null;
+
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !== "inactive"
+  ) {
+
+    mediaRecorder.onstop = null;
+
+    try {
+      mediaRecorder.stop();
+    } catch (error) {}
+
+  }
+
+  stopMicrophone();
+
+  practiceArea.style.display = "none";
+  finishArea.style.display = "block";
+
+  finishTitle.textContent =
+    "中断しました（" +
+    results.length +
+    "問完了）";
+
+});
+
+
+function finishPractice() {
+
+  clearInterval(timerId);
+
+  stopMicrophone();
+
+  practiceArea.style.display = "none";
+  finishArea.style.display = "block";
+
+  finishTitle.textContent =
+    "10問終了しました";
+
+}
+
+
+function stopMicrophone() {
+
+  if (mediaStream) {
+
+    mediaStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    mediaStream = null;
+
+  }
+
+}
+
+
+document
+  .getElementById("reviewButton")
+  .addEventListener("click", () => {
+
+    const review =
+      document.getElementById("answerReview");
+
+    review.innerHTML = "";
+
+    if (results.length === 0) {
+
+      review.innerHTML =
+        "<p>完了した問題はありません。</p>";
+
+      review.style.display = "block";
+      return;
+
+    }
+
+    results.forEach((result, index) => {
+
+      const item =
+        document.createElement("div");
+
+      item.className = "reviewItem";
+
+
+      const q =
+        document.createElement("div");
+
+      q.className = "reviewQuestion";
+
+      q.textContent =
+        "Q" +
+        (index + 1) +
+        ". " +
+        result.question;
+
+
+      const audioLabel =
+        document.createElement("div");
+
+      audioLabel.className = "label";
+      audioLabel.textContent = "録音";
+
+
+      const transcriptLabel =
+        document.createElement("div");
+
+      transcriptLabel.className = "label";
+      transcriptLabel.textContent =
+        "自分の回答";
+
+
+      const transcript =
+        document.createElement("div");
+
+      transcript.className = "box";
+
+      transcript.textContent =
+        result.transcript ||
+        "文字起こしを取得できませんでした。";
+
+
+      const modelLabel =
+        document.createElement("div");
+
+      modelLabel.className = "label";
+      modelLabel.textContent = "解答例";
+
+
+      const model =
+        document.createElement("div");
+
+      model.className = "box";
+      model.textContent = result.modelAnswer;
+
+
+      item.appendChild(q);
+      item.appendChild(audioLabel);
+
+
+      if (result.audioUrl) {
+
+        const audio =
+          document.createElement("audio");
+
+        audio.controls = true;
+        audio.src = result.audioUrl;
+
+        item.appendChild(audio);
+
+      }
+
+
+      item.appendChild(transcriptLabel);
+      item.appendChild(transcript);
+
+      item.appendChild(modelLabel);
+      item.appendChild(model);
+
+      review.appendChild(item);
+
+    });
+
+    review.style.display = "block";
+
+  });
+
+
+document
+  .getElementById("restartButton")
+  .addEventListener("click", () => {
+
+    clearInterval(timerId);
+
+    stopMicrophone();
+
+    clearOldResults();
+
+    results = [];
+    current = 0;
+    interrupted = false;
+
+    finishArea.style.display = "none";
+    practiceArea.style.display = "none";
+    setupArea.style.display = "block";
+
+    document
+      .getElementById("answerReview")
+      .style.display = "none";
+
+    startButton.disabled = false;
+
+  });
+
+
+function clearOldResults() {
+
+  results.forEach(result => {
+
+    if (result.audioUrl) {
+      URL.revokeObjectURL(result.audioUrl);
+    }
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
