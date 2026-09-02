@@ -113,13 +113,20 @@ button:disabled {
 
 .stats {
   font-size: 18px;
-  margin-top: 10px;
-  line-height: 1.7;
+  margin-top: 12px;
+  line-height: 1.8;
 }
 
-.score {
+.pass {
+  color: #16803a;
+  font-size: 24px;
   font-weight: bold;
-  font-size: 20px;
+}
+
+.retry {
+  color: #c40000;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 audio {
@@ -168,7 +175,6 @@ audio {
 
 <audio id="signalSound" preload="auto" src="chirin.mp3"></audio>
 
-
 <div id="setupArea">
 
   <h2>Instant Q&A Practice</h2>
@@ -198,7 +204,6 @@ audio {
 
 </div>
 
-
 <div id="practiceArea" style="display:none;">
 
   <div id="counter"></div>
@@ -211,7 +216,6 @@ audio {
 
 </div>
 
-
 <div id="finishArea" style="display:none;">
 
   <h2 id="finishTitle">10問終了しました</h2>
@@ -223,7 +227,6 @@ audio {
 
 </div>
 
-
 <script>
 
 const API_URL =
@@ -233,13 +236,18 @@ const STUDENT_ID = "yasmin";
 const TOPIC = "Favorites";
 
 const ANSWER_SECONDS = 10;
-const EXTRA_RECORDING_MS = 1000;
+
+const QUESTION_DISPLAY_DELAY_MS = 1000;
 const AFTER_QUESTION_AUDIO_MS = 1000;
+const EXTRA_RECORDING_MS = 1000;
 const AFTER_SIGNAL_MS = 1000;
 
-let questions = [];
+const PASS_WORDS = 20;
+const PASS_CONTENT = 60;
 
+let questions = [];
 let current = 0;
+
 let timerId = null;
 let transitionTimerId = null;
 
@@ -248,12 +256,11 @@ let mediaRecorder = null;
 let audioChunks = [];
 
 let recognition = null;
-
-let finalTranscript = "";
-let interimTranscript = "";
+let currentTranscript = "";
 
 let recognitionEnded = false;
 let recordingEnded = false;
+let answerSaved = false;
 
 let results = [];
 let interrupted = false;
@@ -262,7 +269,6 @@ let isEndingAnswer = false;
 const SpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
-
 
 const setupArea =
   document.getElementById("setupArea");
@@ -320,10 +326,6 @@ checkBrowser();
 loadSpreadsheetData();
 
 
-/* -------------------------
-   スプレッドシート読み込み
-------------------------- */
-
 function loadSpreadsheetData() {
 
   window.receiveSpreadsheetData = function(data) {
@@ -351,10 +353,11 @@ function loadSpreadsheetData() {
     loadingDisplay.textContent =
       questions.length + "問を読み込みました。";
 
-    if (SpeechRecognition &&
-        navigator.mediaDevices &&
-        navigator.mediaDevices.getUserMedia) {
-
+    if (
+      SpeechRecognition &&
+      navigator.mediaDevices &&
+      navigator.mediaDevices.getUserMedia
+    ) {
       startButton.disabled = false;
     }
   };
@@ -379,20 +382,17 @@ function loadSpreadsheetData() {
 }
 
 
-/* -------------------------
-   ブラウザ確認
-------------------------- */
-
 function checkBrowser() {
 
-  if (!navigator.mediaDevices ||
-      !navigator.mediaDevices.getUserMedia) {
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
 
     browserMessage.textContent =
       "このブラウザでは録音機能を利用できません。Chromeをご使用ください。";
 
     startButton.disabled = true;
-
     return;
   }
 
@@ -402,7 +402,6 @@ function checkBrowser() {
       "このブラウザでは文字起こしに対応していません。PCまたはAndroidのChromeをご使用ください。";
 
     startButton.disabled = true;
-
     return;
   }
 
@@ -410,10 +409,6 @@ function checkBrowser() {
     "※開始時にマイクの使用を許可してください。";
 }
 
-
-/* -------------------------
-   開始
-------------------------- */
 
 startButton.addEventListener("click", async () => {
 
@@ -433,7 +428,6 @@ startButton.addEventListener("click", async () => {
       "マイクを使用できません。ブラウザの設定でマイクの使用を許可してください。";
 
     startButton.disabled = false;
-
     return;
   }
 
@@ -454,10 +448,6 @@ startButton.addEventListener("click", async () => {
 });
 
 
-/* -------------------------
-   質問
-------------------------- */
-
 function startQuestion() {
 
   clearInterval(timerId);
@@ -468,7 +458,6 @@ function startQuestion() {
   if (current >= questions.length) {
 
     finishPractice();
-
     return;
   }
 
@@ -488,13 +477,20 @@ function startQuestion() {
   phaseDisplay.textContent =
     "質問を聞いてください";
 
-  playQuestionAudio();
+  /*
+    問題を表示してから1秒待って
+    ネイティブ音声を流す
+  */
+
+  transitionTimerId =
+    setTimeout(() => {
+
+      playQuestionAudio();
+
+    }, QUESTION_DISPLAY_DELAY_MS);
+
 }
 
-
-/* -------------------------
-   質問音声
-------------------------- */
 
 function playQuestionAudio() {
 
@@ -522,11 +518,6 @@ function playQuestionAudio() {
 
   audio.onerror = function() {
 
-    /*
-      音声が読み込めない場合も
-      テスト自体は停止させない
-    */
-
     phaseDisplay.textContent =
       "質問音声を再生できませんでした";
 
@@ -552,21 +543,18 @@ function playQuestionAudio() {
       }, 1500);
 
   });
+
 }
 
-
-/* -------------------------
-   回答開始
-------------------------- */
 
 function startAnswerTime() {
 
   let remaining = ANSWER_SECONDS;
 
   isEndingAnswer = false;
+  answerSaved = false;
 
-  finalTranscript = "";
-  interimTranscript = "";
+  currentTranscript = "";
 
   recognitionEnded = false;
   recordingEnded = false;
@@ -597,8 +585,8 @@ function startAnswerTime() {
       clearInterval(timerId);
 
       /*
-        0秒を表示したまま
-        さらに1秒録音する
+        0秒のまま、さらに1秒
+        録音・文字起こしを続ける
       */
 
       transitionTimerId =
@@ -613,10 +601,6 @@ function startAnswerTime() {
 }
 
 
-/* -------------------------
-   録音
-------------------------- */
-
 function startRecording() {
 
   try {
@@ -629,8 +613,10 @@ function startRecording() {
     mediaRecorder.ondataavailable =
       event => {
 
-        if (event.data &&
-            event.data.size > 0) {
+        if (
+          event.data &&
+          event.data.size > 0
+        ) {
 
           audioChunks.push(
             event.data
@@ -660,10 +646,6 @@ function startRecording() {
 }
 
 
-/* -------------------------
-   音声認識
-------------------------- */
-
 function startRecognition() {
 
   recognition =
@@ -677,28 +659,30 @@ function startRecognition() {
   recognition.onresult =
     function(event) {
 
-      interimTranscript = "";
+      /*
+        毎回results全体から
+        文字列を作り直す。
+        これで重複追加を防ぐ。
+      */
+
+      let fullText = "";
 
       for (
-        let i = event.resultIndex;
+        let i = 0;
         i < event.results.length;
         i++
       ) {
 
-        const text =
-          event.results[i][0].transcript;
+        if (event.results[i][0]) {
 
-        if (event.results[i].isFinal) {
-
-          finalTranscript +=
-            text + " ";
-
-        } else {
-
-          interimTranscript +=
-            text + " ";
+          fullText +=
+            event.results[i][0].transcript +
+            " ";
         }
       }
+
+      currentTranscript =
+        fullText.trim();
     };
 
 
@@ -729,12 +713,9 @@ function startRecognition() {
 
     recognitionEnded = true;
   }
+
 }
 
-
-/* -------------------------
-   回答終了
-------------------------- */
 
 function finishCurrentAnswer() {
 
@@ -743,20 +724,6 @@ function finishCurrentAnswer() {
   isEndingAnswer = true;
 
   recordingStatus.innerHTML = "";
-
-  /*
-    interim結果も最後に保存候補へ残す
-  */
-
-  if (interimTranscript.trim()) {
-
-    finalTranscript +=
-      interimTranscript.trim() + " ";
-
-  }
-
-  interimTranscript = "";
-
 
   if (recognition) {
 
@@ -796,8 +763,8 @@ function finishCurrentAnswer() {
 
 
   /*
-    認識終了イベントを待つが、
-    万一来なかった場合も停止しない
+    音声認識のonendを待つ。
+    万一届かない場合の保険。
   */
 
   setTimeout(() => {
@@ -809,30 +776,33 @@ function finishCurrentAnswer() {
       checkAnswerReady();
     }
 
-  }, 1200);
+  }, 1500);
 
 
   checkAnswerReady();
+
 }
 
 
 function checkAnswerReady() {
 
-  if (!recognitionEnded ||
-      !recordingEnded) {
+  if (
+    !recognitionEnded ||
+    !recordingEnded ||
+    answerSaved
+  ) {
 
     return;
   }
 
+  answerSaved = true;
+
   saveCurrentResult();
 
   playSignalAndMove();
+
 }
 
-
-/* -------------------------
-   結果保存
-------------------------- */
 
 function saveCurrentResult() {
 
@@ -858,7 +828,7 @@ function saveCurrentResult() {
 
 
   const transcript =
-    finalTranscript.trim();
+    currentTranscript.trim();
 
   const wordCount =
     countWords(transcript);
@@ -878,6 +848,11 @@ function saveCurrentResult() {
       transcript,
       questions[current]
     );
+
+
+  const passed =
+    wordCount >= PASS_WORDS &&
+    keywordResult.score >= PASS_CONTENT;
 
 
   results.push({
@@ -910,14 +885,14 @@ function saveCurrentResult() {
       keywordResult.matched,
 
     totalGroups:
-      keywordResult.total
+      keywordResult.total,
+
+    passed:
+      passed
   });
+
 }
 
-
-/* -------------------------
-   キーワード内容判定
-------------------------- */
 
 function calculateKeywordScore(
   transcript,
@@ -936,8 +911,10 @@ function calculateKeywordScore(
         "Keyword Group " + i
       ];
 
-    if (value &&
-        String(value).trim()) {
+    if (
+      value &&
+      String(value).trim()
+    ) {
 
       groups.push(
         String(value)
@@ -962,13 +939,15 @@ function calculateKeywordScore(
     const hit =
       alternatives.some(
         alternative =>
-          normalized.includes(
+          alternativeMatches(
+            normalized,
             alternative
           )
       );
 
 
     if (hit) matched++;
+
   });
 
 
@@ -987,6 +966,104 @@ function calculateKeywordScore(
     matched: matched,
     total: groups.length
   };
+
+}
+
+
+/*
+  単語1語なら
+  s / ed / ing などの
+  基本的な語形変化も拾う
+*/
+
+function alternativeMatches(
+  transcript,
+  alternative
+) {
+
+  if (!alternative) return false;
+
+  const paddedTranscript =
+    " " + transcript + " ";
+
+  const paddedAlternative =
+    " " + alternative + " ";
+
+  if (
+    paddedTranscript.includes(
+      paddedAlternative
+    )
+  ) {
+
+    return true;
+  }
+
+
+  if (!alternative.includes(" ")) {
+
+    const words =
+      transcript.split(" ");
+
+    const forms =
+      makeWordForms(
+        alternative
+      );
+
+    return words.some(
+      word =>
+        forms.includes(word)
+    );
+  }
+
+
+  return false;
+
+}
+
+
+function makeWordForms(word) {
+
+  const forms =
+    new Set([word]);
+
+  if (word.length < 3) {
+
+    return Array.from(forms);
+  }
+
+
+  forms.add(word + "s");
+  forms.add(word + "ed");
+  forms.add(word + "ing");
+
+
+  if (word.endsWith("e")) {
+
+    forms.add(
+      word.slice(0, -1) +
+      "ing"
+    );
+
+    forms.add(
+      word + "d"
+    );
+  }
+
+
+  if (
+    word.endsWith("y") &&
+    word.length > 2
+  ) {
+
+    forms.add(
+      word.slice(0, -1) +
+      "ies"
+    );
+  }
+
+
+  return Array.from(forms);
+
 }
 
 
@@ -994,9 +1071,10 @@ function normalizeText(text) {
 
   return String(text || "")
     .toLowerCase()
-    .replace(/[.,!?'"’]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
 }
 
 
@@ -1009,12 +1087,9 @@ function countWords(text) {
     .split(/\s+/)
     .filter(Boolean)
     .length;
+
 }
 
-
-/* -------------------------
-   切り替え音 → 次へ
-------------------------- */
 
 function playSignalAndMove() {
 
@@ -1032,8 +1107,10 @@ function playSignalAndMove() {
 
 
   /*
-    チリンを鳴らしてから
-    1秒待って次の問題へ
+    チリン後1秒待って
+    次の問題を表示。
+    その後さらに1秒待って
+    質問音声が始まる。
   */
 
   transitionTimerId =
@@ -1046,12 +1123,9 @@ function playSignalAndMove() {
       startQuestion();
 
     }, AFTER_SIGNAL_MS);
+
 }
 
-
-/* -------------------------
-   中断
-------------------------- */
 
 stopButton.addEventListener(
   "click",
@@ -1103,13 +1177,10 @@ stopButton.addEventListener(
 
     restartButton.style.display =
       "none";
+
   }
 );
 
-
-/* -------------------------
-   全問終了
-------------------------- */
 
 function finishPractice() {
 
@@ -1132,6 +1203,7 @@ function finishPractice() {
 
   restartButton.style.display =
     "none";
+
 }
 
 
@@ -1146,13 +1218,11 @@ function stopMicrophone() {
       );
 
     mediaStream = null;
+
   }
+
 }
 
-
-/* -------------------------
-   結果確認
-------------------------- */
 
 reviewButton.addEventListener(
   "click",
@@ -1192,7 +1262,6 @@ reviewButton.addEventListener(
           ". " +
           result.question;
 
-
         item.appendChild(
           question
         );
@@ -1218,6 +1287,7 @@ reviewButton.addEventListener(
           item.appendChild(
             audio
           );
+
         }
 
 
@@ -1259,11 +1329,9 @@ reviewButton.addEventListener(
           "WPM：" +
           result.wpm +
           "<br>" +
-          '<span class="score">' +
           "内容一致率：" +
           result.keywordScore +
-          "%</span>" +
-          "（" +
+          "%（" +
           result.matchedGroups +
           "/" +
           result.totalGroups +
@@ -1271,6 +1339,26 @@ reviewButton.addEventListener(
 
         item.appendChild(
           stats
+        );
+
+
+        const judgment =
+          document.createElement(
+            "div"
+          );
+
+        judgment.className =
+          result.passed
+            ? "pass"
+            : "retry";
+
+        judgment.textContent =
+          result.passed
+            ? "PASS"
+            : "RETRY";
+
+        item.appendChild(
+          judgment
         );
 
 
@@ -1326,6 +1414,7 @@ reviewButton.addEventListener(
         review.appendChild(
           item
         );
+
       }
     );
 
@@ -1335,11 +1424,15 @@ reviewButton.addEventListener(
 
     restartButton.style.display =
       "inline-block";
+
   }
 );
 
 
-function addLabel(parent, text) {
+function addLabel(
+  parent,
+  text
+) {
 
   const label =
     document.createElement(
@@ -1355,12 +1448,9 @@ function addLabel(parent, text) {
   parent.appendChild(
     label
   );
+
 }
 
-
-/* -------------------------
-   もう一度
-------------------------- */
 
 restartButton.addEventListener(
   "click",
@@ -1370,7 +1460,6 @@ restartButton.addEventListener(
     clearTimeout(transitionTimerId);
 
     stopMicrophone();
-
     clearOldResults();
 
     results = [];
@@ -1401,6 +1490,7 @@ restartButton.addEventListener(
 
     startButton.disabled =
       false;
+
   }
 );
 
@@ -1416,8 +1506,10 @@ function clearOldResults() {
           result.audioUrl
         );
       }
+
     }
   );
+
 }
 
 </script>
