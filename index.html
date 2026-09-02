@@ -82,6 +82,45 @@ button:disabled {
   50%, 100% { opacity: 0.2; }
 }
 
+#summaryArea {
+  margin: 25px auto 40px;
+  padding: 20px;
+  background: #f5f5f5;
+  text-align: left;
+  max-width: 620px;
+}
+
+.summaryTitle {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.summaryRow {
+  font-size: 20px;
+  padding: 6px 0;
+}
+
+.overallResult {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid #ccc;
+  font-size: 27px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.pass {
+  color: #16803a;
+  font-weight: bold;
+}
+
+.retry {
+  color: #c40000;
+  font-weight: bold;
+}
+
 #answerReview {
   display: none;
   margin-top: 35px;
@@ -96,7 +135,12 @@ button:disabled {
 .reviewQuestion {
   font-size: 21px;
   font-weight: bold;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+}
+
+.judgment {
+  font-size: 24px;
+  margin-bottom: 12px;
 }
 
 .label {
@@ -115,18 +159,6 @@ button:disabled {
   font-size: 18px;
   margin-top: 12px;
   line-height: 1.8;
-}
-
-.pass {
-  color: #16803a;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.retry {
-  color: #c40000;
-  font-size: 24px;
-  font-weight: bold;
 }
 
 audio {
@@ -204,6 +236,7 @@ audio {
 
 </div>
 
+
 <div id="practiceArea" style="display:none;">
 
   <div id="counter"></div>
@@ -216,6 +249,7 @@ audio {
 
 </div>
 
+
 <div id="finishArea" style="display:none;">
 
   <h2 id="finishTitle">10問終了しました</h2>
@@ -223,9 +257,11 @@ audio {
   <button id="reviewButton">回答を確認する</button>
   <button id="restartButton">もう一度</button>
 
+  <div id="summaryArea" style="display:none;"></div>
   <div id="answerReview"></div>
 
 </div>
+
 
 <script>
 
@@ -237,13 +273,34 @@ const TOPIC = "Favorites";
 
 const ANSWER_SECONDS = 10;
 
-const QUESTION_DISPLAY_DELAY_MS = 1000;
+/*
+  次の問題を表示してから
+  2秒待って質問音声を開始
+*/
+const QUESTION_AUDIO_DELAY_MS = 2000;
+
+/*
+  質問音声終了から回答開始まで1秒
+*/
 const AFTER_QUESTION_AUDIO_MS = 1000;
+
+/*
+  0秒になっても1秒録音継続
+*/
 const EXTRA_RECORDING_MS = 1000;
+
+/*
+  チリン開始後1秒待って
+  次の問題画面へ
+*/
 const AFTER_SIGNAL_MS = 1000;
 
-const PASS_WORDS = 20;
+/*
+  合格条件
+*/
+const PASS_WORDS = 15;
 const PASS_CONTENT = 60;
+
 
 let questions = [];
 let current = 0;
@@ -256,19 +313,27 @@ let mediaRecorder = null;
 let audioChunks = [];
 
 let recognition = null;
-let currentTranscript = "";
+
+/*
+  音声認識結果を
+  result番号ごとに保存する
+*/
+let recognitionResults = {};
+let lastInterimText = "";
 
 let recognitionEnded = false;
 let recordingEnded = false;
 let answerSaved = false;
 
 let results = [];
+
 let interrupted = false;
 let isEndingAnswer = false;
 
 const SpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
+
 
 const setupArea =
   document.getElementById("setupArea");
@@ -321,46 +386,60 @@ const loadingDisplay =
 const signalSound =
   document.getElementById("signalSound");
 
+const summaryArea =
+  document.getElementById("summaryArea");
+
 
 checkBrowser();
 loadSpreadsheetData();
 
 
+/* =========================
+   スプレッドシート
+========================= */
+
 function loadSpreadsheetData() {
 
-  window.receiveSpreadsheetData = function(data) {
+  window.receiveSpreadsheetData =
+    function(data) {
 
-    questions = data
-      .filter(row =>
-        String(row["Student ID"]).toLowerCase() ===
-          STUDENT_ID.toLowerCase()
-        &&
-        String(row["Topic"]).toLowerCase() ===
-          TOPIC.toLowerCase()
-      )
-      .sort((a, b) =>
-        Number(a["No."]) - Number(b["No."])
-      );
+      questions = data
+        .filter(row =>
+          String(row["Student ID"]).toLowerCase() ===
+            STUDENT_ID.toLowerCase()
+          &&
+          String(row["Topic"]).toLowerCase() ===
+            TOPIC.toLowerCase()
+        )
+        .sort((a, b) =>
+          Number(a["No."]) -
+          Number(b["No."])
+        );
 
-    if (questions.length === 0) {
+
+      if (questions.length === 0) {
+
+        loadingDisplay.textContent =
+          "問題データを読み込めませんでした。";
+
+        return;
+      }
+
 
       loadingDisplay.textContent =
-        "問題データを読み込めませんでした。";
+        questions.length +
+        "問を読み込みました。";
 
-      return;
-    }
 
-    loadingDisplay.textContent =
-      questions.length + "問を読み込みました。";
+      if (
+        SpeechRecognition &&
+        navigator.mediaDevices &&
+        navigator.mediaDevices.getUserMedia
+      ) {
 
-    if (
-      SpeechRecognition &&
-      navigator.mediaDevices &&
-      navigator.mediaDevices.getUserMedia
-    ) {
-      startButton.disabled = false;
-    }
-  };
+        startButton.disabled = false;
+      }
+    };
 
 
   const script =
@@ -371,16 +450,20 @@ function loadSpreadsheetData() {
     "?callback=receiveSpreadsheetData&t=" +
     Date.now();
 
-  script.onerror = function() {
+  script.onerror =
+    function() {
 
-    loadingDisplay.textContent =
-      "スプレッドシートとの接続に失敗しました。";
-
-  };
+      loadingDisplay.textContent =
+        "スプレッドシートとの接続に失敗しました。";
+    };
 
   document.body.appendChild(script);
 }
 
+
+/* =========================
+   ブラウザ確認
+========================= */
 
 function checkBrowser() {
 
@@ -396,6 +479,7 @@ function checkBrowser() {
     return;
   }
 
+
   if (!SpeechRecognition) {
 
     browserMessage.textContent =
@@ -405,48 +489,67 @@ function checkBrowser() {
     return;
   }
 
+
   browserMessage.textContent =
     "※開始時にマイクの使用を許可してください。";
 }
 
 
-startButton.addEventListener("click", async () => {
+/* =========================
+   開始
+========================= */
 
-  errorMessage.textContent = "";
-  startButton.disabled = true;
+startButton.addEventListener(
+  "click",
+  async () => {
 
-  try {
+    errorMessage.textContent = "";
 
-    mediaStream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
+    startButton.disabled = true;
 
-  } catch (error) {
 
-    errorMessage.textContent =
-      "マイクを使用できません。ブラウザの設定でマイクの使用を許可してください。";
+    try {
 
-    startButton.disabled = false;
-    return;
+      mediaStream =
+        await navigator.mediaDevices
+          .getUserMedia({
+            audio: true
+          });
+
+    } catch (error) {
+
+      errorMessage.textContent =
+        "マイクを使用できません。ブラウザの設定でマイクの使用を許可してください。";
+
+      startButton.disabled = false;
+
+      return;
+    }
+
+
+    clearOldResults();
+
+    current = 0;
+    results = [];
+    interrupted = false;
+
+    summaryArea.style.display = "none";
+    summaryArea.innerHTML = "";
+
+    restartButton.style.display = "none";
+
+    setupArea.style.display = "none";
+    finishArea.style.display = "none";
+    practiceArea.style.display = "block";
+
+    startQuestion();
   }
+);
 
-  clearOldResults();
 
-  current = 0;
-  results = [];
-  interrupted = false;
-
-  restartButton.style.display = "none";
-
-  setupArea.style.display = "none";
-  finishArea.style.display = "none";
-  practiceArea.style.display = "block";
-
-  startQuestion();
-
-});
-
+/* =========================
+   質問開始
+========================= */
 
 function startQuestion() {
 
@@ -455,20 +558,29 @@ function startQuestion() {
 
   if (interrupted) return;
 
+
   if (current >= questions.length) {
 
     finishPractice();
+
     return;
   }
 
-  const q = questions[current];
+
+  const q =
+    questions[current];
+
 
   counterDisplay.textContent =
-    "Q" + (current + 1) +
-    " / " + questions.length;
+    "Q" +
+    (current + 1) +
+    " / " +
+    questions.length;
+
 
   questionDisplay.textContent =
     q["Question"];
+
 
   timerDisplay.textContent = "";
 
@@ -477,9 +589,10 @@ function startQuestion() {
   phaseDisplay.textContent =
     "質問を聞いてください";
 
+
   /*
-    問題を表示してから1秒待って
-    ネイティブ音声を流す
+    問題表示後2秒待ってから
+    ネイティブ質問音声
   */
 
   transitionTimerId =
@@ -487,47 +600,60 @@ function startQuestion() {
 
       playQuestionAudio();
 
-    }, QUESTION_DISPLAY_DELAY_MS);
-
+    }, QUESTION_AUDIO_DELAY_MS);
 }
 
+
+/* =========================
+   質問音声
+========================= */
 
 function playQuestionAudio() {
 
   const no =
-    String(questions[current]["No."])
-      .padStart(2, "0");
+    String(
+      questions[current]["No."]
+    ).padStart(2, "0");
+
 
   const audio =
-    new Audio("fav" + no + ".mp3");
+    new Audio(
+      "fav" +
+      no +
+      ".mp3"
+    );
+
 
   audio.preload = "auto";
 
-  audio.onended = function() {
 
-    phaseDisplay.textContent = "";
+  audio.onended =
+    function() {
 
-    transitionTimerId =
-      setTimeout(() => {
+      phaseDisplay.textContent = "";
 
-        startAnswerTime();
+      transitionTimerId =
+        setTimeout(() => {
 
-      }, AFTER_QUESTION_AUDIO_MS);
-  };
+          startAnswerTime();
+
+        }, AFTER_QUESTION_AUDIO_MS);
+    };
 
 
-  audio.onerror = function() {
+  audio.onerror =
+    function() {
 
-    phaseDisplay.textContent =
-      "質問音声を再生できませんでした";
+      phaseDisplay.textContent =
+        "質問音声を再生できませんでした";
 
-    transitionTimerId =
-      setTimeout(() => {
+      transitionTimerId =
+        setTimeout(() => {
 
-        startAnswerTime();
+          startAnswerTime();
 
-      }, 1500);
-  };
+        }, 1500);
+    };
 
 
   audio.play().catch(() => {
@@ -541,74 +667,90 @@ function playQuestionAudio() {
         startAnswerTime();
 
       }, 1500);
-
   });
-
 }
 
 
+/* =========================
+   回答開始
+========================= */
+
 function startAnswerTime() {
 
-  let remaining = ANSWER_SECONDS;
+  let remaining =
+    ANSWER_SECONDS;
+
 
   isEndingAnswer = false;
   answerSaved = false;
 
-  currentTranscript = "";
+  recognitionResults = {};
+  lastInterimText = "";
 
   recognitionEnded = false;
   recordingEnded = false;
 
   audioChunks = [];
 
+
   phaseDisplay.textContent =
     "回答時間";
+
 
   timerDisplay.textContent =
     remaining;
 
+
   recordingStatus.innerHTML =
     '<span class="recording">● Recording</span>';
+
 
   startRecording();
   startRecognition();
 
-  timerId = setInterval(() => {
 
-    remaining--;
+  timerId =
+    setInterval(() => {
 
-    timerDisplay.textContent =
-      remaining;
+      remaining--;
 
-    if (remaining <= 0) {
+      timerDisplay.textContent =
+        remaining;
 
-      clearInterval(timerId);
 
-      /*
-        0秒のまま、さらに1秒
-        録音・文字起こしを続ける
-      */
+      if (remaining <= 0) {
 
-      transitionTimerId =
-        setTimeout(() => {
+        clearInterval(timerId);
 
-          finishCurrentAnswer();
 
-        }, EXTRA_RECORDING_MS);
-    }
+        transitionTimerId =
+          setTimeout(() => {
 
-  }, 1000);
+            finishCurrentAnswer();
+
+          }, EXTRA_RECORDING_MS);
+      }
+
+    }, 1000);
 }
 
+
+/* =========================
+   録音
+========================= */
 
 function startRecording() {
 
   try {
 
     mediaRecorder =
-      new MediaRecorder(mediaStream);
+      new MediaRecorder(
+        mediaStream
+      );
+
 
     audioChunks = [];
+
 
     mediaRecorder.ondataavailable =
       event => {
@@ -636,6 +778,7 @@ function startRecording() {
 
     mediaRecorder.start();
 
+
   } catch (error) {
 
     recordingEnded = true;
@@ -646,43 +789,77 @@ function startRecording() {
 }
 
 
+/* =========================
+   音声認識
+========================= */
+
 function startRecognition() {
 
   recognition =
     new SpeechRecognition();
 
-  recognition.lang = "en-US";
-  recognition.continuous = true;
-  recognition.interimResults = true;
+
+  recognition.lang =
+    "en-US";
+
+  recognition.continuous =
+    true;
+
+  recognition.interimResults =
+    true;
 
 
   recognition.onresult =
     function(event) {
 
       /*
-        毎回results全体から
-        文字列を作り直す。
-        これで重複追加を防ぐ。
+        resultIndex以降だけ更新する。
+
+        各result番号をキーとして
+        1つの認識結果だけ保持するので、
+        同じ文章を何度も追加しない。
       */
 
-      let fullText = "";
-
       for (
-        let i = 0;
-        i < event.results.length;
+        let i =
+          event.resultIndex;
+        i <
+          event.results.length;
         i++
       ) {
 
-        if (event.results[i][0]) {
+        const text =
+          event.results[i][0]
+            .transcript
+            .trim();
 
-          fullText +=
-            event.results[i][0].transcript +
-            " ";
+
+        if (
+          event.results[i]
+            .isFinal
+        ) {
+
+          recognitionResults[i] =
+            text;
+
+          /*
+            finalになったので
+            interim候補をリセット
+          */
+
+          lastInterimText = "";
+
+        } else {
+
+          /*
+            未確定部分は
+            最新のものだけ保持
+          */
+
+          lastInterimText =
+            text;
         }
       }
-
-      currentTranscript =
-        fullText.trim();
     };
 
 
@@ -713,9 +890,12 @@ function startRecognition() {
 
     recognitionEnded = true;
   }
-
 }
 
+
+/* =========================
+   回答終了
+========================= */
 
 function finishCurrentAnswer() {
 
@@ -723,7 +903,9 @@ function finishCurrentAnswer() {
 
   isEndingAnswer = true;
 
+
   recordingStatus.innerHTML = "";
+
 
   if (recognition) {
 
@@ -744,7 +926,8 @@ function finishCurrentAnswer() {
 
   if (
     mediaRecorder &&
-    mediaRecorder.state !== "inactive"
+    mediaRecorder.state !==
+      "inactive"
   ) {
 
     try {
@@ -763,8 +946,8 @@ function finishCurrentAnswer() {
 
 
   /*
-    音声認識のonendを待つ。
-    万一届かない場合の保険。
+    Chromeからonendが
+    来ない場合の保険
   */
 
   setTimeout(() => {
@@ -780,9 +963,12 @@ function finishCurrentAnswer() {
 
 
   checkAnswerReady();
-
 }
 
+
+/* =========================
+   保存可能か確認
+========================= */
 
 function checkAnswerReady() {
 
@@ -795,20 +981,249 @@ function checkAnswerReady() {
     return;
   }
 
+
   answerSaved = true;
+
 
   saveCurrentResult();
 
   playSignalAndMove();
-
 }
 
+
+/* =========================
+   文字起こし作成
+========================= */
+
+function buildTranscript() {
+
+  const keys =
+    Object.keys(
+      recognitionResults
+    )
+    .map(Number)
+    .sort(
+      (a, b) =>
+        a - b
+    );
+
+
+  const finalParts =
+    keys
+      .map(
+        key =>
+          recognitionResults[key]
+      )
+      .filter(Boolean);
+
+
+  let transcript =
+    finalParts.join(" ").trim();
+
+
+  /*
+    最後がfinalにならなかった場合のみ、
+    最新interimを補う。
+
+    ただしfinal部分と重なる単語は
+    二重追加しない。
+  */
+
+  if (lastInterimText) {
+
+    transcript =
+      appendWithoutOverlap(
+        transcript,
+        lastInterimText
+      );
+  }
+
+
+  return cleanDuplicatePhrases(
+    transcript
+  );
+}
+
+
+/*
+  文末と追加部分の
+  単語の重なりを検出
+*/
+
+function appendWithoutOverlap(
+  base,
+  extra
+) {
+
+  base =
+    String(base || "")
+      .trim();
+
+  extra =
+    String(extra || "")
+      .trim();
+
+
+  if (!base) return extra;
+  if (!extra) return base;
+
+
+  const baseWords =
+    base.split(/\s+/);
+
+  const extraWords =
+    extra.split(/\s+/);
+
+
+  const maxOverlap =
+    Math.min(
+      baseWords.length,
+      extraWords.length,
+      12
+    );
+
+
+  let overlap = 0;
+
+
+  for (
+    let n = maxOverlap;
+    n >= 1;
+    n--
+  ) {
+
+    const end =
+      baseWords
+        .slice(-n)
+        .join(" ")
+        .toLowerCase();
+
+    const start =
+      extraWords
+        .slice(0, n)
+        .join(" ")
+        .toLowerCase();
+
+
+    if (end === start) {
+
+      overlap = n;
+      break;
+    }
+  }
+
+
+  return (
+    base +
+    " " +
+    extraWords
+      .slice(overlap)
+      .join(" ")
+  ).trim();
+}
+
+
+/*
+  Chromeが同じ長い語列を
+  二重に返した場合の保険
+*/
+
+function cleanDuplicatePhrases(
+  text
+) {
+
+  const words =
+    String(text || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (words.length < 6) {
+
+    return words.join(" ");
+  }
+
+
+  /*
+    3〜15語の連続フレーズが
+    直後に完全重複していた場合削除
+  */
+
+  for (
+    let size =
+      Math.min(
+        15,
+        Math.floor(
+          words.length / 2
+        )
+      );
+    size >= 3;
+    size--
+  ) {
+
+    let i = 0;
+
+
+    while (
+      i +
+      size * 2 <=
+      words.length
+    ) {
+
+      const first =
+        words
+          .slice(
+            i,
+            i + size
+          )
+          .join(" ")
+          .toLowerCase();
+
+
+      const second =
+        words
+          .slice(
+            i + size,
+            i + size * 2
+          )
+          .join(" ")
+          .toLowerCase();
+
+
+      if (
+        first === second
+      ) {
+
+        words.splice(
+          i + size,
+          size
+        );
+
+      } else {
+
+        i++;
+      }
+    }
+  }
+
+
+  return words.join(" ");
+}
+
+
+/* =========================
+   結果保存
+========================= */
 
 function saveCurrentResult() {
 
   let audioUrl = null;
 
-  if (audioChunks.length > 0) {
+
+  if (
+    audioChunks.length > 0
+  ) {
 
     const mimeType =
       mediaRecorder &&
@@ -816,22 +1231,32 @@ function saveCurrentResult() {
         ? mediaRecorder.mimeType
         : "audio/webm";
 
+
     const blob =
       new Blob(
         audioChunks,
-        { type: mimeType }
+        {
+          type: mimeType
+        }
       );
 
+
     audioUrl =
-      URL.createObjectURL(blob);
+      URL.createObjectURL(
+        blob
+      );
   }
 
 
   const transcript =
-    currentTranscript.trim();
+    buildTranscript();
+
 
   const wordCount =
-    countWords(transcript);
+    countWords(
+      transcript
+    );
+
 
   const wpm =
     wordCount > 0
@@ -851,8 +1276,11 @@ function saveCurrentResult() {
 
 
   const passed =
-    wordCount >= PASS_WORDS &&
-    keywordResult.score >= PASS_CONTENT;
+    wordCount >=
+      PASS_WORDS
+    &&
+    keywordResult.score >=
+      PASS_CONTENT;
 
 
   results.push({
@@ -867,7 +1295,8 @@ function saveCurrentResult() {
       transcript,
 
     modelAnswer:
-      questions[current]["Model Answer"],
+      questions[current]
+        ["Model Answer"],
 
     audioUrl:
       audioUrl,
@@ -890,9 +1319,12 @@ function saveCurrentResult() {
     passed:
       passed
   });
-
 }
 
+
+/* =========================
+   内容一致率
+========================= */
 
 function calculateKeywordScore(
   transcript,
@@ -900,16 +1332,25 @@ function calculateKeywordScore(
 ) {
 
   const normalized =
-    normalizeText(transcript);
+    normalizeText(
+      transcript
+    );
+
 
   const groups = [];
 
-  for (let i = 1; i <= 5; i++) {
+
+  for (
+    let i = 1;
+    i <= 5;
+    i++
+  ) {
 
     const value =
       question[
         "Keyword Group " + i
       ];
+
 
     if (
       value &&
@@ -925,30 +1366,38 @@ function calculateKeywordScore(
 
   let matched = 0;
 
-  groups.forEach(group => {
 
-    const alternatives =
-      group
-        .split("|")
-        .map(item =>
-          normalizeText(item)
-        )
-        .filter(Boolean);
+  groups.forEach(
+    group => {
 
-
-    const hit =
-      alternatives.some(
-        alternative =>
-          alternativeMatches(
-            normalized,
-            alternative
+      const alternatives =
+        group
+          .split("|")
+          .map(
+            item =>
+              normalizeText(
+                item
+              )
           )
-      );
+          .filter(Boolean);
 
 
-    if (hit) matched++;
+      const hit =
+        alternatives.some(
+          alternative =>
+            alternativeMatches(
+              normalized,
+              alternative
+            )
+        );
 
-  });
+
+      if (hit) {
+
+        matched++;
+      }
+    }
+  );
 
 
   const score =
@@ -966,28 +1415,35 @@ function calculateKeywordScore(
     matched: matched,
     total: groups.length
   };
-
 }
 
 
-/*
-  単語1語なら
-  s / ed / ing などの
-  基本的な語形変化も拾う
-*/
+/* =========================
+   キーワード照合
+========================= */
 
 function alternativeMatches(
   transcript,
   alternative
 ) {
 
-  if (!alternative) return false;
+  if (!alternative) {
+
+    return false;
+  }
+
 
   const paddedTranscript =
-    " " + transcript + " ";
+    " " +
+    transcript +
+    " ";
+
 
   const paddedAlternative =
-    " " + alternative + " ";
+    " " +
+    alternative +
+    " ";
+
 
   if (
     paddedTranscript.includes(
@@ -999,45 +1455,72 @@ function alternativeMatches(
   }
 
 
-  if (!alternative.includes(" ")) {
+  /*
+    1単語の場合のみ
+    基本的な語形変化を許容
+  */
+
+  if (
+    !alternative.includes(" ")
+  ) {
 
     const words =
       transcript.split(" ");
+
 
     const forms =
       makeWordForms(
         alternative
       );
 
+
     return words.some(
       word =>
-        forms.includes(word)
+        forms.includes(
+          word
+        )
     );
   }
 
 
   return false;
-
 }
 
 
-function makeWordForms(word) {
+function makeWordForms(
+  word
+) {
 
   const forms =
     new Set([word]);
 
-  if (word.length < 3) {
 
-    return Array.from(forms);
+  if (
+    word.length < 3
+  ) {
+
+    return Array.from(
+      forms
+    );
   }
 
 
-  forms.add(word + "s");
-  forms.add(word + "ed");
-  forms.add(word + "ing");
+  forms.add(
+    word + "s"
+  );
+
+  forms.add(
+    word + "ed"
+  );
+
+  forms.add(
+    word + "ing"
+  );
 
 
-  if (word.endsWith("e")) {
+  if (
+    word.endsWith("e")
+  ) {
 
     forms.add(
       word.slice(0, -1) +
@@ -1051,8 +1534,7 @@ function makeWordForms(word) {
 
 
   if (
-    word.endsWith("y") &&
-    word.length > 2
+    word.endsWith("y")
   ) {
 
     forms.add(
@@ -1062,42 +1544,67 @@ function makeWordForms(word) {
   }
 
 
-  return Array.from(forms);
-
+  return Array.from(
+    forms
+  );
 }
 
 
-function normalizeText(text) {
+function normalizeText(
+  text
+) {
 
-  return String(text || "")
+  return String(
+    text || ""
+  )
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(
+      /[^a-z0-9\s]/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
     .trim();
-
 }
 
 
-function countWords(text) {
+function countWords(
+  text
+) {
 
-  if (!text) return 0;
+  if (!text) {
+
+    return 0;
+  }
+
 
   return text
     .trim()
     .split(/\s+/)
     .filter(Boolean)
     .length;
-
 }
 
 
+/* =========================
+   チリン → 次の問題
+========================= */
+
 function playSignalAndMove() {
 
-  if (interrupted) return;
+  if (interrupted) {
+
+    return;
+  }
+
 
   try {
 
-    signalSound.currentTime = 0;
+    signalSound.currentTime =
+      0;
+
 
     signalSound
       .play()
@@ -1107,25 +1614,34 @@ function playSignalAndMove() {
 
 
   /*
-    チリン後1秒待って
+    チリン開始後1秒で
     次の問題を表示。
-    その後さらに1秒待って
-    質問音声が始まる。
+
+    その問題の音声は、
+    startQuestion内で
+    さらに2秒待って始まる。
   */
 
   transitionTimerId =
     setTimeout(() => {
 
-      if (interrupted) return;
+      if (interrupted) {
+
+        return;
+      }
+
 
       current++;
 
       startQuestion();
 
     }, AFTER_SIGNAL_MS);
-
 }
 
+
+/* =========================
+   中断
+========================= */
 
 stopButton.addEventListener(
   "click",
@@ -1133,77 +1649,108 @@ stopButton.addEventListener(
 
     interrupted = true;
 
-    clearInterval(timerId);
-    clearTimeout(transitionTimerId);
+    clearInterval(
+      timerId
+    );
+
+    clearTimeout(
+      transitionTimerId
+    );
+
 
     if (recognition) {
 
       try {
+
         recognition.abort();
+
       } catch (error) {}
     }
 
 
     if (
       mediaRecorder &&
-      mediaRecorder.state !== "inactive"
+      mediaRecorder.state !==
+        "inactive"
     ) {
 
-      mediaRecorder.onstop = null;
+      mediaRecorder.onstop =
+        null;
+
 
       try {
+
         mediaRecorder.stop();
+
       } catch (error) {}
     }
 
 
     stopMicrophone();
 
+
     practiceArea.style.display =
       "none";
 
+
     finishArea.style.display =
       "block";
+
 
     finishTitle.textContent =
       "中断しました（" +
       results.length +
       "問完了）";
 
+
     reviewButton.style.display =
       results.length > 0
         ? "inline-block"
         : "none";
 
+
     restartButton.style.display =
       "none";
-
   }
 );
 
 
+/* =========================
+   終了
+========================= */
+
 function finishPractice() {
 
-  clearInterval(timerId);
-  clearTimeout(transitionTimerId);
+  clearInterval(
+    timerId
+  );
+
+  clearTimeout(
+    transitionTimerId
+  );
+
 
   stopMicrophone();
+
 
   practiceArea.style.display =
     "none";
 
+
   finishArea.style.display =
     "block";
+
 
   finishTitle.textContent =
     "10問終了しました";
 
+
   reviewButton.style.display =
     "inline-block";
 
+
   restartButton.style.display =
     "none";
-
 }
 
 
@@ -1214,219 +1761,327 @@ function stopMicrophone() {
     mediaStream
       .getTracks()
       .forEach(
-        track => track.stop()
+        track =>
+          track.stop()
       );
 
+
     mediaStream = null;
-
   }
-
 }
 
+
+/* =========================
+   回答確認
+========================= */
 
 reviewButton.addEventListener(
   "click",
   () => {
 
-    const review =
-      document.getElementById(
-        "answerReview"
+    showSummary();
+
+    showDetailedResults();
+
+    restartButton.style.display =
+      "inline-block";
+  }
+);
+
+
+/* =========================
+   判定一覧
+========================= */
+
+function showSummary() {
+
+  summaryArea.innerHTML = "";
+
+
+  const title =
+    document.createElement(
+      "div"
+    );
+
+  title.className =
+    "summaryTitle";
+
+  title.textContent =
+    "判定結果";
+
+  summaryArea.appendChild(
+    title
+  );
+
+
+  results.forEach(
+    (result, index) => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "summaryRow";
+
+
+      row.innerHTML =
+        "Q" +
+        (index + 1) +
+        "　" +
+        (
+          result.passed
+            ? '<span class="pass">PASS</span>'
+            : '<span class="retry">RETRY</span>'
+        );
+
+
+      summaryArea.appendChild(
+        row
+      );
+    }
+  );
+
+
+  const allPassed =
+    results.length ===
+      questions.length
+    &&
+    results.every(
+      result =>
+        result.passed
+    );
+
+
+  const overall =
+    document.createElement(
+      "div"
+    );
+
+
+  overall.className =
+    "overallResult";
+
+
+  overall.innerHTML =
+    allPassed
+      ? '総合結果：<span class="pass">PASS</span>'
+      : '総合結果：<span class="retry">RETRY</span>';
+
+
+  summaryArea.appendChild(
+    overall
+  );
+
+
+  summaryArea.style.display =
+    "block";
+}
+
+
+/* =========================
+   詳細結果
+========================= */
+
+function showDetailedResults() {
+
+  const review =
+    document.getElementById(
+      "answerReview"
+    );
+
+
+  review.innerHTML = "";
+
+
+  results.forEach(
+    (result, index) => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "reviewItem";
+
+
+      const question =
+        document.createElement(
+          "div"
+        );
+
+
+      question.className =
+        "reviewQuestion";
+
+
+      question.textContent =
+        "Q" +
+        (index + 1) +
+        ". " +
+        result.question;
+
+
+      item.appendChild(
+        question
       );
 
-    review.innerHTML = "";
 
-
-    results.forEach(
-      (result, index) => {
-
-        const item =
-          document.createElement(
-            "div"
-          );
-
-        item.className =
-          "reviewItem";
-
-
-        const question =
-          document.createElement(
-            "div"
-          );
-
-        question.className =
-          "reviewQuestion";
-
-        question.textContent =
-          "Q" +
-          (index + 1) +
-          ". " +
-          result.question;
-
-        item.appendChild(
-          question
+      const judgment =
+        document.createElement(
+          "div"
         );
 
 
-        addLabel(
-          item,
-          "自分の録音"
-        );
-
-
-        if (result.audioUrl) {
-
-          const audio =
-            document.createElement(
-              "audio"
-            );
-
-          audio.controls = true;
-          audio.src =
-            result.audioUrl;
-
-          item.appendChild(
-            audio
-          );
-
-        }
-
-
-        addLabel(
-          item,
-          "文字起こし"
-        );
-
-
-        const transcript =
-          document.createElement(
-            "div"
-          );
-
-        transcript.className =
-          "box";
-
-        transcript.textContent =
-          result.transcript ||
-          "文字起こしを取得できませんでした。";
-
-        item.appendChild(
-          transcript
-        );
-
-
-        const stats =
-          document.createElement(
-            "div"
-          );
-
-        stats.className =
-          "stats";
-
-        stats.innerHTML =
-          "単語数：" +
-          result.wordCount +
-          "語<br>" +
-          "WPM：" +
-          result.wpm +
-          "<br>" +
-          "内容一致率：" +
-          result.keywordScore +
-          "%（" +
-          result.matchedGroups +
-          "/" +
-          result.totalGroups +
-          "項目）";
-
-        item.appendChild(
-          stats
-        );
-
-
-        const judgment =
-          document.createElement(
-            "div"
-          );
-
-        judgment.className =
+      judgment.className =
+        "judgment " +
+        (
           result.passed
             ? "pass"
-            : "retry";
-
-        judgment.textContent =
-          result.passed
-            ? "PASS"
-            : "RETRY";
-
-        item.appendChild(
-          judgment
+            : "retry"
         );
 
 
-        addLabel(
-          item,
-          "模範回答"
-        );
+      judgment.textContent =
+        result.passed
+          ? "PASS"
+          : "RETRY";
 
 
-        const model =
-          document.createElement(
-            "div"
-          );
-
-        model.className =
-          "box";
-
-        model.textContent =
-          result.modelAnswer;
-
-        item.appendChild(
-          model
-        );
+      item.appendChild(
+        judgment
+      );
 
 
-        addLabel(
-          item,
-          "模範回答の音声"
-        );
+      addLabel(
+        item,
+        "自分の録音"
+      );
 
 
-        const modelAudio =
+      if (result.audioUrl) {
+
+        const audio =
           document.createElement(
             "audio"
           );
 
-        modelAudio.controls = true;
 
-        const no =
-          String(result.no)
-            .padStart(2, "0");
+        audio.controls =
+          true;
 
-        modelAudio.src =
-          "yasmin_fav" +
-          no +
-          ".mp3";
+
+        audio.src =
+          result.audioUrl;
+
 
         item.appendChild(
-          modelAudio
+          audio
         );
-
-
-        review.appendChild(
-          item
-        );
-
       }
-    );
 
 
-    review.style.display =
-      "block";
+      addLabel(
+        item,
+        "文字起こし"
+      );
 
-    restartButton.style.display =
-      "inline-block";
 
-  }
-);
+      const transcript =
+        document.createElement(
+          "div"
+        );
+
+
+      transcript.className =
+        "box";
+
+
+      transcript.textContent =
+        result.transcript ||
+        "文字起こしを取得できませんでした。";
+
+
+      item.appendChild(
+        transcript
+      );
+
+
+      const stats =
+        document.createElement(
+          "div"
+        );
+
+
+      stats.className =
+        "stats";
+
+
+      stats.innerHTML =
+        "単語数：" +
+        result.wordCount +
+        "語<br>" +
+        "WPM：" +
+        result.wpm +
+        "<br>" +
+        "内容一致率：" +
+        result.keywordScore +
+        "%（" +
+        result.matchedGroups +
+        "/" +
+        result.totalGroups +
+        "項目）";
+
+
+      item.appendChild(
+        stats
+      );
+
+
+      addLabel(
+        item,
+        "模範回答"
+      );
+
+
+      const model =
+        document.createElement(
+          "div"
+        );
+
+
+      model.className =
+        "box";
+
+
+      model.textContent =
+        result.modelAnswer;
+
+
+      item.appendChild(
+        model
+      );
+
+
+      /*
+        模範回答クローン音声は
+        結果画面には表示しない
+      */
+
+
+      review.appendChild(
+        item
+      );
+    }
+  );
+
+
+  review.style.display =
+    "block";
+}
 
 
 function addLabel(
@@ -1439,41 +2094,64 @@ function addLabel(
       "div"
     );
 
+
   label.className =
     "label";
+
 
   label.textContent =
     text;
 
+
   parent.appendChild(
     label
   );
-
 }
 
+
+/* =========================
+   もう一度
+========================= */
 
 restartButton.addEventListener(
   "click",
   () => {
 
-    clearInterval(timerId);
-    clearTimeout(transitionTimerId);
+    clearInterval(
+      timerId
+    );
+
+
+    clearTimeout(
+      transitionTimerId
+    );
+
 
     stopMicrophone();
+
     clearOldResults();
+
 
     results = [];
     current = 0;
     interrupted = false;
 
+
     finishArea.style.display =
       "none";
+
 
     practiceArea.style.display =
       "none";
 
+
     setupArea.style.display =
       "block";
+
+
+    summaryArea.style.display =
+      "none";
+
 
     document
       .getElementById(
@@ -1482,15 +2160,17 @@ restartButton.addEventListener(
       .style.display =
         "none";
 
+
     restartButton.style.display =
       "none";
+
 
     reviewButton.style.display =
       "inline-block";
 
+
     startButton.disabled =
       false;
-
   }
 );
 
@@ -1500,16 +2180,16 @@ function clearOldResults() {
   results.forEach(
     result => {
 
-      if (result.audioUrl) {
+      if (
+        result.audioUrl
+      ) {
 
         URL.revokeObjectURL(
           result.audioUrl
         );
       }
-
     }
   );
-
 }
 
 </script>
