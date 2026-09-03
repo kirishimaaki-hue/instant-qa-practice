@@ -82,33 +82,37 @@ button:disabled {
   50%, 100% { opacity: 0.2; }
 }
 
-#summaryArea {
-  margin: 25px auto 40px;
-  padding: 20px;
-  background: #f5f5f5;
-  text-align: left;
-  max-width: 620px;
+#finishTitle {
+  font-size: 30px;
+  margin-bottom: 24px;
 }
 
-.summaryTitle {
-  font-size: 24px;
+#summaryArea {
+  margin: 20px auto 40px;
+  padding: 24px;
+  background: #f5f5f5;
+  max-width: 620px;
+  text-align: left;
+}
+
+#scoreDisplay {
+  font-size: 40px;
   font-weight: bold;
-  margin-bottom: 15px;
   text-align: center;
+  margin-bottom: 12px;
+}
+
+#scoreMessage {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.6;
 }
 
 .summaryRow {
   font-size: 20px;
   padding: 6px 0;
-}
-
-.overallResult {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 2px solid #ccc;
-  font-size: 27px;
-  font-weight: bold;
-  text-align: center;
 }
 
 .pass {
@@ -122,7 +126,6 @@ button:disabled {
 }
 
 #answerReview {
-  display: none;
   margin-top: 35px;
   text-align: left;
 }
@@ -177,11 +180,13 @@ audio {
   margin-top: 18px;
 }
 
-#restartButton {
-  display: none;
+#restartArea {
+  margin-top: 40px;
+  padding-top: 25px;
 }
 
 @media (max-width: 600px) {
+
   body {
     margin: 15px auto;
     padding: 16px;
@@ -199,6 +204,10 @@ audio {
   #timer {
     font-size: 48px;
   }
+
+  #scoreDisplay {
+    font-size: 34px;
+  }
 }
 </style>
 </head>
@@ -207,6 +216,7 @@ audio {
 
 <audio id="signalSound" preload="auto" src="chirin.mp3"></audio>
 
+
 <div id="setupArea">
 
   <h2>Instant Q&A Practice</h2>
@@ -214,19 +224,22 @@ audio {
   <div id="instructions">
     10問を連続で練習します。<br>
     質問の音声を最後まで聞いてください。<br>
-    音声が終わると、約1秒後に回答時間が始まります。<br>
-    10秒で英語で答えましょう。<br><br>
+    音声が終わったら、10秒で英語で答えましょう。<br><br>
 
-    10問すべて終わった後に、録音・文字起こし・解答例を確認できます。
+    10問すべて終わった後に、成績と回答内容を確認できます。
   </div>
 
-  <div id="loading">問題データを読み込んでいます...</div>
+  <div id="loading">
+    問題データを読み込んでいます...
+  </div>
 
   <p>
     <strong>準備ができたら「開始」を押してください。</strong>
   </p>
 
-  <button id="startButton" disabled>開始</button>
+  <button id="startButton" disabled>
+    開始
+  </button>
 
   <div id="browserMessage">
     ※開始時にマイクの使用を許可してください。
@@ -240,25 +253,37 @@ audio {
 <div id="practiceArea" style="display:none;">
 
   <div id="counter"></div>
+
   <div id="question"></div>
+
   <div id="phase"></div>
+
   <div id="timer"></div>
+
   <div id="recordingStatus"></div>
 
-  <button id="stopButton">中断する</button>
+  <button id="stopButton">
+    中断する
+  </button>
 
 </div>
 
 
 <div id="finishArea" style="display:none;">
 
-  <h2 id="finishTitle">10問終了しました</h2>
+  <h2 id="finishTitle">
+    成績を確認しましょう
+  </h2>
 
-  <button id="reviewButton">回答を確認する</button>
-  <button id="restartButton">もう一度</button>
+  <div id="summaryArea"></div>
 
-  <div id="summaryArea" style="display:none;"></div>
   <div id="answerReview"></div>
+
+  <div id="restartArea">
+    <button id="restartButton">
+      もう一度
+    </button>
+  </div>
 
 </div>
 
@@ -274,29 +299,25 @@ const TOPIC = "Favorites";
 const ANSWER_SECONDS = 10;
 
 /*
-  次の問題を表示してから
-  2秒待って質問音声を開始
+ 次の問題を表示してから
+ 2秒待って質問音声を開始
 */
 const QUESTION_AUDIO_DELAY_MS = 2000;
 
 /*
-  質問音声終了から回答開始まで1秒
-*/
-const AFTER_QUESTION_AUDIO_MS = 1000;
-
-/*
-  0秒になっても1秒録音継続
+ 0秒になっても
+ さらに1秒録音を継続
 */
 const EXTRA_RECORDING_MS = 1000;
 
 /*
-  チリン開始後1秒待って
-  次の問題画面へ
+ チリン開始後1秒待って
+ 次の問題画面へ
 */
 const AFTER_SIGNAL_MS = 1000;
 
 /*
-  合格条件
+ 合格条件
 */
 const PASS_WORDS = 15;
 const PASS_CONTENT = 60;
@@ -314,10 +335,6 @@ let audioChunks = [];
 
 let recognition = null;
 
-/*
-  音声認識結果を
-  result番号ごとに保存する
-*/
 let recognitionResults = {};
 let lastInterimText = "";
 
@@ -329,6 +346,7 @@ let results = [];
 
 let interrupted = false;
 let isEndingAnswer = false;
+
 
 const SpeechRecognition =
   window.SpeechRecognition ||
@@ -349,9 +367,6 @@ const startButton =
 
 const stopButton =
   document.getElementById("stopButton");
-
-const reviewButton =
-  document.getElementById("reviewButton");
 
 const restartButton =
   document.getElementById("restartButton");
@@ -389,13 +404,16 @@ const signalSound =
 const summaryArea =
   document.getElementById("summaryArea");
 
+const answerReview =
+  document.getElementById("answerReview");
+
 
 checkBrowser();
 loadSpreadsheetData();
 
 
 /* =========================
-   スプレッドシート
+   スプレッドシート読み込み
 ========================= */
 
 function loadSpreadsheetData() {
@@ -445,10 +463,12 @@ function loadSpreadsheetData() {
   const script =
     document.createElement("script");
 
+
   script.src =
     API_URL +
     "?callback=receiveSpreadsheetData&t=" +
     Date.now();
+
 
   script.onerror =
     function() {
@@ -456,6 +476,7 @@ function loadSpreadsheetData() {
       loadingDisplay.textContent =
         "スプレッドシートとの接続に失敗しました。";
     };
+
 
   document.body.appendChild(script);
 }
@@ -476,6 +497,7 @@ function checkBrowser() {
       "このブラウザでは録音機能を利用できません。Chromeをご使用ください。";
 
     startButton.disabled = true;
+
     return;
   }
 
@@ -486,6 +508,7 @@ function checkBrowser() {
       "このブラウザでは文字起こしに対応していません。PCまたはAndroidのChromeをご使用ください。";
 
     startButton.disabled = true;
+
     return;
   }
 
@@ -496,7 +519,7 @@ function checkBrowser() {
 
 
 /* =========================
-   開始
+   テスト開始
 ========================= */
 
 startButton.addEventListener(
@@ -533,14 +556,18 @@ startButton.addEventListener(
     results = [];
     interrupted = false;
 
-    summaryArea.style.display = "none";
     summaryArea.innerHTML = "";
+    answerReview.innerHTML = "";
 
-    restartButton.style.display = "none";
+    setupArea.style.display =
+      "none";
 
-    setupArea.style.display = "none";
-    finishArea.style.display = "none";
-    practiceArea.style.display = "block";
+    finishArea.style.display =
+      "none";
+
+    practiceArea.style.display =
+      "block";
+
 
     startQuestion();
   }
@@ -548,13 +575,14 @@ startButton.addEventListener(
 
 
 /* =========================
-   質問開始
+   質問表示
 ========================= */
 
 function startQuestion() {
 
   clearInterval(timerId);
   clearTimeout(transitionTimerId);
+
 
   if (interrupted) return;
 
@@ -591,8 +619,8 @@ function startQuestion() {
 
 
   /*
-    問題表示後2秒待ってから
-    ネイティブ質問音声
+   問題表示後2秒待ってから
+   ネイティブ音声開始
   */
 
   transitionTimerId =
@@ -627,17 +655,15 @@ function playQuestionAudio() {
   audio.preload = "auto";
 
 
+  /*
+   音声終了と同時に
+   録音・文字起こし・タイマー開始
+  */
+
   audio.onended =
     function() {
 
-      phaseDisplay.textContent = "";
-
-      transitionTimerId =
-        setTimeout(() => {
-
-          startAnswerTime();
-
-        }, AFTER_QUESTION_AUDIO_MS);
+      startAnswerTime();
     };
 
 
@@ -647,12 +673,11 @@ function playQuestionAudio() {
       phaseDisplay.textContent =
         "質問音声を再生できませんでした";
 
-      transitionTimerId =
-        setTimeout(() => {
+      setTimeout(() => {
 
-          startAnswerTime();
+        startAnswerTime();
 
-        }, 1500);
+      }, 1000);
     };
 
 
@@ -661,12 +686,11 @@ function playQuestionAudio() {
     phaseDisplay.textContent =
       "質問音声を再生できませんでした";
 
-    transitionTimerId =
-      setTimeout(() => {
+    setTimeout(() => {
 
-        startAnswerTime();
+      startAnswerTime();
 
-      }, 1500);
+    }, 1000);
   });
 }
 
@@ -705,6 +729,11 @@ function startAnswerTime() {
     '<span class="recording">● Recording</span>';
 
 
+  /*
+   表示と同時に
+   録音と音声認識を開始
+  */
+
   startRecording();
   startRecognition();
 
@@ -722,6 +751,10 @@ function startAnswerTime() {
 
         clearInterval(timerId);
 
+
+        /*
+         0秒表示後も1秒録音
+        */
 
         transitionTimerId =
           setTimeout(() => {
@@ -812,19 +845,9 @@ function startRecognition() {
   recognition.onresult =
     function(event) {
 
-      /*
-        resultIndex以降だけ更新する。
-
-        各result番号をキーとして
-        1つの認識結果だけ保持するので、
-        同じ文章を何度も追加しない。
-      */
-
       for (
-        let i =
-          event.resultIndex;
-        i <
-          event.results.length;
+        let i = event.resultIndex;
+        i < event.results.length;
         i++
       ) {
 
@@ -835,25 +858,24 @@ function startRecognition() {
 
 
         if (
-          event.results[i]
-            .isFinal
+          event.results[i].isFinal
         ) {
+
+          /*
+           result番号ごとに上書き保存。
+           同じ結果を何度も追加しない。
+          */
 
           recognitionResults[i] =
             text;
-
-          /*
-            finalになったので
-            interim候補をリセット
-          */
 
           lastInterimText = "";
 
         } else {
 
           /*
-            未確定部分は
-            最新のものだけ保持
+           未確定部分は
+           最新1件だけ保持
           */
 
           lastInterimText =
@@ -901,8 +923,8 @@ function finishCurrentAnswer() {
 
   if (isEndingAnswer) return;
 
-  isEndingAnswer = true;
 
+  isEndingAnswer = true;
 
   recordingStatus.innerHTML = "";
 
@@ -946,8 +968,7 @@ function finishCurrentAnswer() {
 
 
   /*
-    Chromeからonendが
-    来ない場合の保険
+   Chromeの音声認識終了を待つ
   */
 
   setTimeout(() => {
@@ -1018,15 +1039,14 @@ function buildTranscript() {
 
 
   let transcript =
-    finalParts.join(" ").trim();
+    finalParts
+      .join(" ")
+      .trim();
 
 
   /*
-    最後がfinalにならなかった場合のみ、
-    最新interimを補う。
-
-    ただしfinal部分と重なる単語は
-    二重追加しない。
+   最後の語句がfinal化されなかった場合のみ
+   interimを重複しないよう追加
   */
 
   if (lastInterimText) {
@@ -1045,10 +1065,9 @@ function buildTranscript() {
 }
 
 
-/*
-  文末と追加部分の
-  単語の重なりを検出
-*/
+/* =========================
+   文末重複除去
+========================= */
 
 function appendWithoutOverlap(
   base,
@@ -1056,15 +1075,14 @@ function appendWithoutOverlap(
 ) {
 
   base =
-    String(base || "")
-      .trim();
+    String(base || "").trim();
 
   extra =
-    String(extra || "")
-      .trim();
+    String(extra || "").trim();
 
 
   if (!base) return extra;
+
   if (!extra) return base;
 
 
@@ -1098,6 +1116,7 @@ function appendWithoutOverlap(
         .join(" ")
         .toLowerCase();
 
+
     const start =
       extraWords
         .slice(0, n)
@@ -1108,6 +1127,7 @@ function appendWithoutOverlap(
     if (end === start) {
 
       overlap = n;
+
       break;
     }
   }
@@ -1123,10 +1143,9 @@ function appendWithoutOverlap(
 }
 
 
-/*
-  Chromeが同じ長い語列を
-  二重に返した場合の保険
-*/
+/* =========================
+   長い重複フレーズ削除
+========================= */
 
 function cleanDuplicatePhrases(
   text
@@ -1144,11 +1163,6 @@ function cleanDuplicatePhrases(
     return words.join(" ");
   }
 
-
-  /*
-    3〜15語の連続フレーズが
-    直後に完全重複していた場合削除
-  */
 
   for (
     let size =
@@ -1191,9 +1205,7 @@ function cleanDuplicatePhrases(
           .toLowerCase();
 
 
-      if (
-        first === second
-      ) {
+      if (first === second) {
 
         words.splice(
           i + size,
@@ -1455,11 +1467,6 @@ function alternativeMatches(
   }
 
 
-  /*
-    1単語の場合のみ
-    基本的な語形変化を許容
-  */
-
   if (
     !alternative.includes(" ")
   ) {
@@ -1589,7 +1596,7 @@ function countWords(
 
 
 /* =========================
-   チリン → 次の問題
+   チリン → 次へ
 ========================= */
 
 function playSignalAndMove() {
@@ -1614,12 +1621,11 @@ function playSignalAndMove() {
 
 
   /*
-    チリン開始後1秒で
-    次の問題を表示。
+   チリン開始後1秒で
+   次の問題画面へ。
 
-    その問題の音声は、
-    startQuestion内で
-    さらに2秒待って始まる。
+   次の問題音声は
+   さらに2秒後に始まる。
   */
 
   transitionTimerId =
@@ -1698,25 +1704,16 @@ stopButton.addEventListener(
 
 
     finishTitle.textContent =
-      "中断しました（" +
-      results.length +
-      "問完了）";
+      "中断しました";
 
 
-    reviewButton.style.display =
-      results.length > 0
-        ? "inline-block"
-        : "none";
-
-
-    restartButton.style.display =
-      "none";
+    showInterruptedResults();
   }
 );
 
 
 /* =========================
-   終了
+   全問終了
 ========================= */
 
 function finishPractice() {
@@ -1742,75 +1739,82 @@ function finishPractice() {
 
 
   finishTitle.textContent =
-    "10問終了しました";
+    "成績を確認しましょう";
 
 
-  reviewButton.style.display =
-    "inline-block";
-
-
-  restartButton.style.display =
-    "none";
-}
-
-
-function stopMicrophone() {
-
-  if (mediaStream) {
-
-    mediaStream
-      .getTracks()
-      .forEach(
-        track =>
-          track.stop()
-      );
-
-
-    mediaStream = null;
-  }
+  showFinalResults();
 }
 
 
 /* =========================
-   回答確認
+   完了時の成績表示
 ========================= */
 
-reviewButton.addEventListener(
-  "click",
-  () => {
+function showFinalResults() {
 
-    showSummary();
-
-    showDetailedResults();
-
-    restartButton.style.display =
-      "inline-block";
-  }
-);
+  const passCount =
+    results.filter(
+      result =>
+        result.passed
+    ).length;
 
 
-/* =========================
-   判定一覧
-========================= */
+  const score =
+    passCount * 10;
 
-function showSummary() {
 
   summaryArea.innerHTML = "";
 
 
-  const title =
+  const scoreDisplay =
     document.createElement(
       "div"
     );
 
-  title.className =
-    "summaryTitle";
 
-  title.textContent =
-    "判定結果";
+  scoreDisplay.id =
+    "scoreDisplay";
+
+
+  scoreDisplay.textContent =
+    score +
+    " / 100点";
+
 
   summaryArea.appendChild(
-    title
+    scoreDisplay
+  );
+
+
+  const message =
+    document.createElement(
+      "div"
+    );
+
+
+  message.id =
+    "scoreMessage";
+
+
+  if (score === 100) {
+
+    message.innerHTML =
+      '<span class="pass">合格です！</span> 練習の成果が発揮できましたね。';
+
+  } else if (score >= 70) {
+
+    message.innerHTML =
+      '<strong>もう一息です！</strong> 次回は合格をねらいましょう。';
+
+  } else {
+
+    message.innerHTML =
+      '<strong>お疲れさまです！練習してから再挑戦しましょう。</strong>';
+  }
+
+
+  summaryArea.appendChild(
+    message
   );
 
 
@@ -1821,6 +1825,7 @@ function showSummary() {
         document.createElement(
           "div"
         );
+
 
       row.className =
         "summaryRow";
@@ -1844,39 +1849,21 @@ function showSummary() {
   );
 
 
-  const allPassed =
-    results.length ===
-      questions.length
-    &&
-    results.every(
-      result =>
-        result.passed
-    );
+  showDetailedResults();
+}
 
 
-  const overall =
-    document.createElement(
-      "div"
-    );
+/* =========================
+   中断時
+========================= */
+
+function showInterruptedResults() {
+
+  summaryArea.innerHTML =
+    "<p>完了した問題のみ表示します。</p>";
 
 
-  overall.className =
-    "overallResult";
-
-
-  overall.innerHTML =
-    allPassed
-      ? '総合結果：<span class="pass">PASS</span>'
-      : '総合結果：<span class="retry">RETRY</span>';
-
-
-  summaryArea.appendChild(
-    overall
-  );
-
-
-  summaryArea.style.display =
-    "block";
+  showDetailedResults();
 }
 
 
@@ -1886,13 +1873,7 @@ function showSummary() {
 
 function showDetailedResults() {
 
-  const review =
-    document.getElementById(
-      "answerReview"
-    );
-
-
-  review.innerHTML = "";
+  answerReview.innerHTML = "";
 
 
   results.forEach(
@@ -2067,22 +2048,23 @@ function showDetailedResults() {
 
 
       /*
-        模範回答クローン音声は
-        結果画面には表示しない
+       クローン音声は
+       練習モード用なので
+       結果画面には表示しない
       */
 
 
-      review.appendChild(
+      answerReview.appendChild(
         item
       );
     }
   );
-
-
-  review.style.display =
-    "block";
 }
 
+
+/* =========================
+   ラベル
+========================= */
 
 function addLabel(
   parent,
@@ -2106,6 +2088,27 @@ function addLabel(
   parent.appendChild(
     label
   );
+}
+
+
+/* =========================
+   マイク停止
+========================= */
+
+function stopMicrophone() {
+
+  if (mediaStream) {
+
+    mediaStream
+      .getTracks()
+      .forEach(
+        track =>
+          track.stop()
+      );
+
+
+    mediaStream = null;
+  }
 }
 
 
@@ -2149,24 +2152,8 @@ restartButton.addEventListener(
       "block";
 
 
-    summaryArea.style.display =
-      "none";
-
-
-    document
-      .getElementById(
-        "answerReview"
-      )
-      .style.display =
-        "none";
-
-
-    restartButton.style.display =
-      "none";
-
-
-    reviewButton.style.display =
-      "inline-block";
+    summaryArea.innerHTML = "";
+    answerReview.innerHTML = "";
 
 
     startButton.disabled =
@@ -2174,6 +2161,10 @@ restartButton.addEventListener(
   }
 );
 
+
+/* =========================
+   古い録音URL破棄
+========================= */
 
 function clearOldResults() {
 
