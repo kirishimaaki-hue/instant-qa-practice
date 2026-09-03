@@ -1,1 +1,909 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Yasmin Practice</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 760px;
+  margin: 35px auto;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+h1 {
+  text-align: center;
+}
+
+.question {
+  font-size: 26px;
+  font-weight: bold;
+  margin: 30px 0 20px;
+}
+
+.sentence {
+  margin: 20px 0;
+  padding: 18px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.sentence-text {
+  font-size: 21px;
+  margin-bottom: 12px;
+}
+
+button {
+  font-size: 18px;
+  padding: 10px 18px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+#status {
+  margin: 20px 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#debug {
+  margin-top: 25px;
+  font-size: 14px;
+  color: #666;
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 15px auto;
+    padding: 15px;
+  }
+
+  .question {
+    font-size: 23px;
+  }
+
+  .sentence-text {
+    font-size: 19px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Favorites 練習</h1>
+
+<div class="question">
+Q1. What's your favorite season?
+</div>
+
+<button id="loadButton">
+練習を開始
+</button>
+
+<div id="status">
+「練習を開始」を押してください。
+</div>
+
+<div id="practiceArea" style="display:none;">
+
+  <div class="sentence">
+    <div class="sentence-text">
+      1. My favorite season is summer.
+    </div>
+    <button onclick="playSentence(0)">
+      ▶ この文を聞く
+    </button>
+  </div>
+
+  <div class="sentence">
+    <div class="sentence-text">
+      2. I hate cold weather.
+    </div>
+    <button onclick="playSentence(1)">
+      ▶ この文を聞く
+    </button>
+  </div>
+
+  <div class="sentence">
+    <div class="sentence-text">
+      3. Summers here are humid and tough, but I still prefer summer.
+    </div>
+    <button onclick="playSentence(2)">
+      ▶ この文を聞く
+    </button>
+  </div>
+
+  <hr>
+
+  <button id="autoButton">
+    ▶ 3文を順番に練習
+  </button>
+
+  <button id="pauseButton">
+    一時停止
+  </button>
+
+</div>
+
+<div id="debug"></div>
+
+<script>
+
+/* ============================
+   設定
+============================ */
+
+const AUDIO_FILE = "yasmin_fav01.mp3";
+
+/*
+Q1は3センテンスなので3。
+将来はGoogle Sheetの文章から
+自動取得するようにできます。
+*/
+const EXPECTED_SENTENCES = 3;
+
+/*
+無音と判断する最低時間。
+250ms以上の無音を候補にする。
+*/
+const MIN_SILENCE_SECONDS = 0.25;
+
+/*
+音量がこの値以下なら
+無音候補。
+*/
+const SILENCE_THRESHOLD = 0.02;
+
+
+/* ============================
+   変数
+============================ */
+
+let segments = [];
+
+let player = new Audio(AUDIO_FILE);
+
+let segmentStopTimer = null;
+
+let autoRunning = false;
+let autoIndex = 0;
+
+let isPaused = false;
+
+
+/* ============================
+   要素
+============================ */
+
+const loadButton =
+  document.getElementById("loadButton");
+
+const statusDisplay =
+  document.getElementById("status");
+
+const practiceArea =
+  document.getElementById("practiceArea");
+
+const autoButton =
+  document.getElementById("autoButton");
+
+const pauseButton =
+  document.getElementById("pauseButton");
+
+const debugDisplay =
+  document.getElementById("debug");
+
+
+/* ============================
+   練習開始
+============================ */
+
+loadButton.addEventListener(
+  "click",
+  async () => {
+
+    loadButton.disabled = true;
+
+    statusDisplay.textContent =
+      "音声を解析しています…";
+
+    try {
+
+      segments =
+        await detectSentenceSegments(
+          AUDIO_FILE,
+          EXPECTED_SENTENCES
+        );
+
+      if (
+        segments.length !==
+        EXPECTED_SENTENCES
+      ) {
+
+        throw new Error(
+          "センテンスを正しく分割できませんでした。"
+        );
+      }
+
+      practiceArea.style.display =
+        "block";
+
+      statusDisplay.textContent =
+        "準備できました。聞きたいセンテンスを選んでください。";
+
+
+      debugDisplay.innerHTML =
+        segments
+          .map(
+            (segment, index) =>
+              "Sentence " +
+              (index + 1) +
+              ": " +
+              segment.start.toFixed(2) +
+              "秒 ～ " +
+              segment.end.toFixed(2) +
+              "秒"
+          )
+          .join("<br>");
+
+    } catch (error) {
+
+      console.error(error);
+
+      statusDisplay.textContent =
+        "音声の自動分割に失敗しました。";
+
+      loadButton.disabled = false;
+    }
+  }
+);
+
+
+/* ============================
+   MP3を解析
+============================ */
+
+async function detectSentenceSegments(
+  file,
+  expectedCount
+) {
+
+  const response =
+    await fetch(file);
+
+  const arrayBuffer =
+    await response.arrayBuffer();
+
+  const audioContext =
+    new AudioContext();
+
+  const audioBuffer =
+    await audioContext.decodeAudioData(
+      arrayBuffer
+    );
+
+
+  /*
+  左右チャンネルを平均して
+  1本の波形として解析
+  */
+
+  const length =
+    audioBuffer.length;
+
+  const mono =
+    new Float32Array(length);
+
+
+  for (
+    let channel = 0;
+    channel <
+      audioBuffer.numberOfChannels;
+    channel++
+  ) {
+
+    const data =
+      audioBuffer.getChannelData(
+        channel
+      );
+
+
+    for (
+      let i = 0;
+      i < length;
+      i++
+    ) {
+
+      mono[i] +=
+        data[i] /
+        audioBuffer.numberOfChannels;
+    }
+  }
+
+
+  const sampleRate =
+    audioBuffer.sampleRate;
+
+
+  /*
+  20msごとの音量を測る
+  */
+
+  const frameSeconds =
+    0.02;
+
+  const frameSize =
+    Math.floor(
+      sampleRate *
+      frameSeconds
+    );
+
+
+  const frames = [];
+
+
+  for (
+    let start = 0;
+    start < mono.length;
+    start += frameSize
+  ) {
+
+    const end =
+      Math.min(
+        start + frameSize,
+        mono.length
+      );
+
+
+    let sum = 0;
+
+
+    for (
+      let i = start;
+      i < end;
+      i++
+    ) {
+
+      sum +=
+        mono[i] *
+        mono[i];
+    }
+
+
+    const rms =
+      Math.sqrt(
+        sum /
+        (end - start)
+      );
+
+
+    frames.push({
+      time:
+        start /
+        sampleRate,
+
+      rms: rms
+    });
+  }
+
+
+  /*
+  無音区間を探す
+  */
+
+  const silenceRanges = [];
+
+  let silenceStart =
+    null;
+
+
+  for (
+    let i = 0;
+    i < frames.length;
+    i++
+  ) {
+
+    const silent =
+      frames[i].rms <
+      SILENCE_THRESHOLD;
+
+
+    if (
+      silent &&
+      silenceStart === null
+    ) {
+
+      silenceStart =
+        frames[i].time;
+    }
+
+
+    if (
+      !silent &&
+      silenceStart !== null
+    ) {
+
+      const silenceEnd =
+        frames[i].time;
+
+
+      if (
+        silenceEnd -
+        silenceStart >=
+        MIN_SILENCE_SECONDS
+      ) {
+
+        silenceRanges.push({
+          start:
+            silenceStart,
+
+          end:
+            silenceEnd,
+
+          duration:
+            silenceEnd -
+            silenceStart
+        });
+      }
+
+
+      silenceStart =
+        null;
+    }
+  }
+
+
+  /*
+  最後まで無音だった場合
+  */
+
+  if (
+    silenceStart !== null
+  ) {
+
+    const silenceEnd =
+      audioBuffer.duration;
+
+
+    if (
+      silenceEnd -
+      silenceStart >=
+      MIN_SILENCE_SECONDS
+    ) {
+
+      silenceRanges.push({
+        start:
+          silenceStart,
+
+        end:
+          silenceEnd,
+
+        duration:
+          silenceEnd -
+          silenceStart
+      });
+    }
+  }
+
+
+  /*
+  冒頭・末尾の無音は
+  文の境目として使わない
+  */
+
+  const internalSilences =
+    silenceRanges.filter(
+      range =>
+        range.start > 0.3
+        &&
+        range.end <
+          audioBuffer.duration -
+          0.3
+    );
+
+
+  /*
+  必要な境界数は
+  センテンス数 - 1。
+
+  Q1なら2ヶ所。
+  長い無音から選ぶ。
+  */
+
+  const requiredBreaks =
+    expectedCount - 1;
+
+
+  const selected =
+    internalSilences
+      .sort(
+        (a, b) =>
+          b.duration -
+          a.duration
+      )
+      .slice(
+        0,
+        requiredBreaks
+      )
+      .sort(
+        (a, b) =>
+          a.start -
+          b.start
+      );
+
+
+  if (
+    selected.length !==
+    requiredBreaks
+  ) {
+
+    throw new Error(
+      "必要な数の文間ポーズを検出できませんでした。"
+    );
+  }
+
+
+  /*
+  音声そのものの開始と終了も
+  無音をある程度取り除く
+  */
+
+  let actualStart =
+    0;
+
+  let actualEnd =
+    audioBuffer.duration;
+
+
+  for (
+    let i = 0;
+    i < frames.length;
+    i++
+  ) {
+
+    if (
+      frames[i].rms >=
+      SILENCE_THRESHOLD
+    ) {
+
+      actualStart =
+        Math.max(
+          0,
+          frames[i].time -
+          0.05
+        );
+
+      break;
+    }
+  }
+
+
+  for (
+    let i =
+      frames.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    if (
+      frames[i].rms >=
+      SILENCE_THRESHOLD
+    ) {
+
+      actualEnd =
+        Math.min(
+          audioBuffer.duration,
+          frames[i].time +
+          frameSeconds +
+          0.08
+        );
+
+      break;
+    }
+  }
+
+
+  /*
+  各文の開始・終了時刻を作る。
+
+  文間の無音部分そのものは
+  できるだけ再生しない。
+  */
+
+  const result = [];
+
+  let sentenceStart =
+    actualStart;
+
+
+  selected.forEach(
+    gap => {
+
+      const sentenceEnd =
+        Math.min(
+          actualEnd,
+          gap.start + 0.05
+        );
+
+
+      result.push({
+        start:
+          sentenceStart,
+
+        end:
+          sentenceEnd
+      });
+
+
+      sentenceStart =
+        Math.max(
+          0,
+          gap.end - 0.05
+        );
+    }
+  );
+
+
+  result.push({
+    start:
+      sentenceStart,
+
+    end:
+      actualEnd
+  });
+
+
+  await audioContext.close();
+
+
+  return result;
+}
+
+
+/* ============================
+   1センテンス再生
+============================ */
+
+function playSentence(
+  index,
+  callback = null
+) {
+
+  if (!segments[index]) {
+
+    return;
+  }
+
+
+  clearTimeout(
+    segmentStopTimer
+  );
+
+
+  player.pause();
+
+
+  const segment =
+    segments[index];
+
+
+  player.currentTime =
+    segment.start;
+
+
+  player.play();
+
+
+  const duration =
+    Math.max(
+      0,
+      segment.end -
+      segment.start
+    );
+
+
+  segmentStopTimer =
+    setTimeout(() => {
+
+      player.pause();
+
+      if (callback) {
+
+        callback();
+      }
+
+    }, duration * 1000);
+}
+
+
+/* ============================
+   全文を順番に練習
+============================ */
+
+autoButton.addEventListener(
+  "click",
+  () => {
+
+    autoRunning = true;
+    autoIndex = 0;
+
+    pauseButton.textContent =
+      "一時停止";
+
+    isPaused = false;
+
+    playAutoSentence();
+  }
+);
+
+
+function playAutoSentence() {
+
+  if (
+    !autoRunning ||
+    autoIndex >=
+      segments.length
+  ) {
+
+    autoRunning = false;
+
+    statusDisplay.textContent =
+      "3文の練習が終わりました。";
+
+    return;
+  }
+
+
+  statusDisplay.textContent =
+    "Sentence " +
+    (autoIndex + 1) +
+    " を聞いてください。";
+
+
+  playSentence(
+    autoIndex,
+    () => {
+
+      /*
+      文の語数によって
+      リピート用ポーズを決める
+      */
+
+      const text =
+        document.querySelectorAll(
+          ".sentence-text"
+        )[autoIndex]
+        .textContent
+        .replace(
+          /^\s*\d+\.\s*/,
+          ""
+        )
+        .trim();
+
+
+      const wordCount =
+        text
+          .split(/\s+/)
+          .length;
+
+
+      const pauseMs =
+        calculateRepeatPause(
+          wordCount
+        );
+
+
+      statusDisplay.textContent =
+        "リピートしてください。";
+
+
+      setTimeout(() => {
+
+        if (
+          !autoRunning ||
+          isPaused
+        ) {
+
+          return;
+        }
+
+
+        autoIndex++;
+
+        playAutoSentence();
+
+      }, pauseMs);
+    }
+  );
+}
+
+
+/* ============================
+   文の長さでポーズ変更
+============================ */
+
+function calculateRepeatPause(
+  wordCount
+) {
+
+  if (
+    wordCount <= 8
+  ) {
+
+    return 3000;
+  }
+
+
+  if (
+    wordCount <= 14
+  ) {
+
+    return 4000;
+  }
+
+
+  if (
+    wordCount <= 20
+  ) {
+
+    return 5000;
+  }
+
+
+  return 6000;
+}
+
+
+/* ============================
+   一時停止
+============================ */
+
+pauseButton.addEventListener(
+  "click",
+  () => {
+
+    if (!isPaused) {
+
+      isPaused = true;
+
+      player.pause();
+
+      pauseButton.textContent =
+        "再開";
+
+      statusDisplay.textContent =
+        "一時停止中です。";
+
+    } else {
+
+      isPaused = false;
+
+      pauseButton.textContent =
+        "一時停止";
+
+      statusDisplay.textContent =
+        "練習を再開します。";
+
+      /*
+      一時停止した文を
+      最初からもう一度再生
+      */
+
+      if (autoRunning) {
+
+        playAutoSentence();
+      }
+    }
+  }
+);
+
+</script>
+
+</body>
+</html>
