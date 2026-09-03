@@ -19,61 +19,23 @@ body {
 }
 
 .app {
-  display: flex;
-  max-width: 1150px;
+  max-width: 900px;
   min-height: 100vh;
   margin: 0 auto;
+  padding: 35px 42px 70px;
   background: white;
-}
-
-/* 左メニュー */
-
-.sidebar {
-  width: 220px;
-  padding: 28px 18px;
-  border-right: 1px solid #ddd;
-  background: #fafafa;
-}
-
-.sidebar-title {
-  font-size: 19px;
-  font-weight: bold;
-  margin-bottom: 16px;
-}
-
-.menu-item {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 8px;
-  text-align: left;
-  font-size: 17px;
-  border: 1px solid #ccc;
-  border-radius: 7px;
-  background: white;
-}
-
-.menu-item.active {
-  background: #111;
-  color: white;
-}
-
-/* メイン */
-
-.main {
-  flex: 1;
-  padding: 38px 45px 70px;
 }
 
 h1 {
+  margin: 0 0 30px;
   font-size: 32px;
-  margin-top: 0;
-  margin-bottom: 32px;
 }
 
 .question {
+  margin-bottom: 15px;
   font-size: 29px;
   font-weight: bold;
-  margin-bottom: 14px;
+  line-height: 1.5;
 }
 
 button {
@@ -82,24 +44,24 @@ button {
 }
 
 .button {
-  font-size: 16px;
   padding: 10px 16px;
-  margin: 4px 4px 4px 0;
+  margin: 4px 5px 4px 0;
+  font-size: 16px;
   border: 1px solid #999;
   border-radius: 6px;
   background: white;
 }
 
 .button.primary {
+  border-color: #111;
   background: #111;
   color: white;
-  border-color: #111;
 }
 
 .button.record {
+  border-color: #b00020;
   background: #b00020;
   color: white;
-  border-color: #b00020;
 }
 
 .button:disabled {
@@ -107,129 +69,51 @@ button {
   cursor: default;
 }
 
-/* 録音 */
+.top-controls {
+  margin-bottom: 10px;
+}
 
 .record-controls {
-  margin: 16px 0 20px;
-  padding: 14px 0;
+  margin: 8px 0 12px;
 }
 
 #recordStatus {
-  display: inline-block;
   margin-left: 8px;
   font-weight: bold;
   color: #b00020;
 }
 
 #recordPlayback {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 #recordPlayback audio {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
 }
 
-/* 練習種類 */
-
-.section-title {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 34px 0 14px;
-}
-
-.step-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 18px;
-}
-
-.step-button {
-  padding: 11px 15px;
-  font-size: 16px;
-  border: 1px solid #bbb;
-  background: white;
-  border-radius: 7px;
-}
-
-.step-button.active {
-  background: #111;
-  color: white;
-}
-
-/* ヒント */
-
-.hint-box {
-  background: #f4f4f4;
-  border-radius: 9px;
-  padding: 20px;
-  margin-bottom: 20px;
-  min-height: 75px;
-  font-size: 21px;
-  line-height: 1.7;
-}
-
-.no-hint {
-  color: #777;
-  text-align: center;
-}
-
-/* A-1 センテンス */
-
-.sentence-card {
-  background: #f4f4f4;
-  border-radius: 9px;
-  padding: 18px 20px;
-  margin-bottom: 14px;
-}
-
-.sentence-text {
-  font-size: 20px;
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-
-/* 状態 */
-
-#status {
-  min-height: 38px;
-  margin: 15px 0 5px;
-  font-size: 23px;
-  font-weight: bold;
-}
-
-#loading {
-  min-height: 22px;
-  color: #777;
-}
-
-/* 文字起こし */
-
-.transcript-area {
-  margin-top: 24px;
-  border-top: 1px solid #ddd;
-  padding-top: 20px;
+.transcript-section {
+  margin: 20px 0 32px;
 }
 
 .transcript-title {
-  font-size: 18px;
-  font-weight: bold;
   margin-bottom: 7px;
+  font-size: 19px;
+  font-weight: bold;
 }
 
 #transcript {
-  background: #f4f4f4;
-  min-height: 75px;
-  padding: 14px;
+  min-height: 85px;
+  padding: 15px;
+  background: #f3f3f3;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.6;
 }
 
 #judgment {
-  min-height: 34px;
-  margin-top: 10px;
+  min-height: 32px;
+  margin-top: 9px;
   font-size: 21px;
   font-weight: bold;
 }
@@ -242,35 +126,104 @@ button {
   color: #c00000;
 }
 
-/* スマホ */
+.step-title {
+  margin: 30px 0 13px;
+  font-size: 21px;
+  font-weight: bold;
+}
 
-@media (max-width: 760px) {
+.step-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.step-button {
+  padding: 11px 14px;
+  font-size: 15px;
+  border: 1px solid #bbb;
+  border-radius: 7px;
+  background: white;
+}
+
+.step-button.active {
+  border-color: #111;
+  background: #111;
+  color: white;
+}
+
+#stepDescription {
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#hintBox {
+  min-height: 75px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f3f3f3;
+  border-radius: 9px;
+  font-size: 20px;
+  line-height: 1.8;
+}
+
+.no-hint {
+  padding-top: 5px;
+  text-align: center;
+  color: #777;
+}
+
+.sentence-card {
+  margin-bottom: 14px;
+  padding: 18px 20px;
+  background: #f3f3f3;
+  border-radius: 9px;
+}
+
+.sentence-text {
+  margin-bottom: 9px;
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+#practiceControls {
+  margin-top: 15px;
+}
+
+#status {
+  min-height: 38px;
+  margin: 16px 0 4px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#loading {
+  min-height: 23px;
+  color: #777;
+}
+
+@media (max-width: 600px) {
   .app {
-    display: block;
+    padding: 22px 16px 50px;
   }
 
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #ddd;
-    padding: 14px;
-  }
-
-  .menu-item {
-    width: auto;
-    min-width: 70px;
-  }
-
-  .main {
-    padding: 25px 18px 50px;
+  h1 {
+    font-size: 27px;
   }
 
   .question {
     font-size: 24px;
   }
 
-  h1 {
-    font-size: 27px;
+  .step-button {
+    font-size: 14px;
+  }
+
+  #transcript,
+  #hintBox {
+    font-size: 18px;
   }
 }
 </style>
@@ -280,131 +233,108 @@ button {
 
 <div class="app">
 
-  <aside class="sidebar">
-    <div class="sidebar-title">問題一覧</div>
+  <h1>Favorites 練習</h1>
 
-    <button class="menu-item active">
-      Q1
-    </button>
-  </aside>
+  <div class="question">
+    Q1. What's your favorite season?
+  </div>
 
-
-  <main class="main">
-
-    <h1>Favorites 練習</h1>
-
-    <div class="question">
-      Q1. What's your favorite season?
-    </div>
-
+  <div class="top-controls">
     <button id="questionAudioButton" class="button">
       ▶ 質問を聞く
     </button>
+  </div>
 
+  <div class="record-controls">
 
-    <!-- 録音 -->
-    <div class="record-controls">
-
-      <button id="recordButton" class="button record">
-        ● 録音
-      </button>
-
-      <button id="stopRecordButton" class="button" disabled>
-        ■ 停止
-      </button>
-
-      <span id="recordStatus"></span>
-
-      <div id="recordPlayback"></div>
-
-    </div>
-
-
-    <!-- A -->
-    <div class="section-title">
-      A：1センテンスずつ練習
-    </div>
-
-    <div class="step-tabs">
-
-      <button class="step-button a-step active" data-step="1">
-        Step 1 全文
-      </button>
-
-      <button class="step-button a-step" data-step="2">
-        Step 2 ヒント
-      </button>
-
-      <button class="step-button a-step" data-step="3">
-        Step 3 ヒントなし
-      </button>
-
-    </div>
-
-    <div id="aPracticeArea"></div>
-
-
-    <!-- B -->
-    <div class="section-title">
-      B：3センテンスまとめて練習
-    </div>
-
-    <div class="step-tabs">
-
-      <button class="step-button b-step active" data-step="1">
-        Step 1 ヒント多め
-      </button>
-
-      <button class="step-button b-step" data-step="2">
-        Step 2 ヒント少なめ
-      </button>
-
-      <button class="step-button b-step" data-step="3">
-        Step 3 ヒントなし
-      </button>
-
-    </div>
-
-    <div id="bHintBox" class="hint-box"></div>
-
-    <button id="bPlayButton" class="button primary" disabled>
-      ▶ 3センテンスを聞いてまとめてリピート
+    <button id="recordButton" class="button record">
+      ● 録音
     </button>
 
-    <button id="pauseButton" class="button" disabled>
-      一時停止
+    <button id="stopRecordButton" class="button" disabled>
+      ■ 停止
     </button>
 
+    <span id="recordStatus"></span>
 
-    <div id="status"></div>
-    <div id="loading">音声を読み込んでいます…</div>
+    <div id="recordPlayback"></div>
+
+  </div>
 
 
-    <!-- 文字起こし -->
-    <div class="transcript-area">
+  <div class="transcript-section">
 
-      <div class="transcript-title">
-        リピートした英文
-      </div>
-
-      <div id="transcript">
-        リピートすると、ここに自動で文字起こしされます。
-      </div>
-
-      <div id="judgment"></div>
-
+    <div class="transcript-title">
+      文字起こし
     </div>
 
-  </main>
+    <div id="transcript">
+      リピートした英文がここに表示されます。
+    </div>
+
+    <div id="judgment"></div>
+
+  </div>
+
+
+  <div class="step-title">
+    練習ステップ
+  </div>
+
+  <div class="step-tabs">
+
+    <button class="step-button active" data-step="1">
+      Step 1
+    </button>
+
+    <button class="step-button" data-step="2">
+      Step 2
+    </button>
+
+    <button class="step-button" data-step="3">
+      Step 3
+    </button>
+
+    <button class="step-button" data-step="4">
+      Step 4
+    </button>
+
+    <button class="step-button" data-step="5">
+      Step 5
+    </button>
+
+    <button class="step-button" data-step="6">
+      Step 6
+    </button>
+
+    <button class="step-button" data-step="7">
+      Step 7
+    </button>
+
+  </div>
+
+  <div id="stepDescription"></div>
+
+  <div id="hintBox"></div>
+
+  <div id="step1Area"></div>
+
+  <div id="practiceControls"></div>
+
+  <div id="status"></div>
+
+  <div id="loading">
+    音声を読み込んでいます…
+  </div>
 
 </div>
 
 
 <script>
 
-/* =====================================
+/* ==============================
    Q1
-===================================== */
+============================== */
 
 const QUESTION = {
 
@@ -420,19 +350,17 @@ const QUESTION = {
     "Summers here are humid and tough, but I still prefer summer."
   ],
 
-  aHints: [
-    "summer",
-    "cold weather",
-    "humid / tough / prefer summer"
-  ],
-
-  bHintMany:
+  hintMany:
     "favorite season / summer / hate cold weather / humid / tough / still prefer summer",
 
-  bHintFew:
+  hintFew:
     "summer / cold / humid / prefer summer"
 };
 
+
+/* ==============================
+   設定
+============================== */
 
 const PASS_SCORE = 90;
 
@@ -440,9 +368,9 @@ const MIN_SILENCE_SECONDS = 0.25;
 const SILENCE_THRESHOLD = 0.02;
 
 
-/* =====================================
+/* ==============================
    DOM
-===================================== */
+============================== */
 
 const questionAudioButton =
   document.getElementById("questionAudioButton");
@@ -459,17 +387,23 @@ const recordStatus =
 const recordPlayback =
   document.getElementById("recordPlayback");
 
-const aPracticeArea =
-  document.getElementById("aPracticeArea");
+const transcriptDisplay =
+  document.getElementById("transcript");
 
-const bHintBox =
-  document.getElementById("bHintBox");
+const judgmentDisplay =
+  document.getElementById("judgment");
 
-const bPlayButton =
-  document.getElementById("bPlayButton");
+const stepDescription =
+  document.getElementById("stepDescription");
 
-const pauseButton =
-  document.getElementById("pauseButton");
+const hintBox =
+  document.getElementById("hintBox");
+
+const step1Area =
+  document.getElementById("step1Area");
+
+const practiceControls =
+  document.getElementById("practiceControls");
 
 const statusDisplay =
   document.getElementById("status");
@@ -477,51 +411,40 @@ const statusDisplay =
 const loadingDisplay =
   document.getElementById("loading");
 
-const transcriptDisplay =
-  document.getElementById("transcript");
-
-const judgmentDisplay =
-  document.getElementById("judgment");
+const stepButtons =
+  document.querySelectorAll(".step-button");
 
 
-/* =====================================
+/* ==============================
    音声
-===================================== */
-
-const answerPlayer =
-  new Audio(
-    QUESTION.answerAudio
-  );
+============================== */
 
 const questionPlayer =
   new Audio(
     QUESTION.questionAudio
   );
 
+const answerPlayer =
+  new Audio(
+    QUESTION.answerAudio
+  );
+
 let segments = [];
 
+let currentStep = 1;
+let currentSegment = 0;
+
 let segmentEndTime = null;
-
 let animationId = null;
-
-let pauseTimer = null;
-
-let currentCallback = null;
+let repeatTimer = null;
 
 let isPaused = false;
+let practiceRunning = false;
 
 
-/* =====================================
-   Step状態
-===================================== */
-
-let aStep = 1;
-let bStep = 1;
-
-
-/* =====================================
+/* ==============================
    SpeechRecognition
-===================================== */
+============================== */
 
 const SpeechRecognition =
   window.SpeechRecognition ||
@@ -529,48 +452,43 @@ const SpeechRecognition =
 
 let recognition = null;
 
-let finalTranscript = "";
-let interimTranscript = "";
+let recognitionFinal = "";
+let recognitionInterim = "";
 
-let currentTarget = "";
+let activeTarget = "";
 
-let recognitionActive = false;
+let accumulatedTranscript = [];
+
+let recognitionFinishCallback = null;
 
 
-/* =====================================
-   任意録音
-===================================== */
+/* ==============================
+   録音
+============================== */
 
 let recordStream = null;
-
 let mediaRecorder = null;
-
 let recordedChunks = [];
-
 let recordedUrl = null;
 
 
-/* =====================================
+/* ==============================
    初期化
-===================================== */
+============================== */
 
-renderA();
-renderB();
-
+renderStep();
 prepareSegments();
 
 
-/* =====================================
+/* ==============================
    質問音声
-===================================== */
+============================== */
 
 questionAudioButton.addEventListener(
   "click",
   () => {
 
-    stopRecognition();
-
-    stopPracticeAudio();
+    stopAllPractice();
 
     questionPlayer.currentTime = 0;
 
@@ -579,57 +497,68 @@ questionAudioButton.addEventListener(
 );
 
 
-/* =====================================
-   A Step切替
-===================================== */
+/* ==============================
+   Step切替
+============================== */
 
-document
-  .querySelectorAll(".a-step")
-  .forEach(
-    button => {
+stepButtons.forEach(
+  button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-          aStep =
-            Number(
-              button.dataset.step
+        stopAllPractice();
+
+        currentStep =
+          Number(
+            button.dataset.step
+          );
+
+
+        stepButtons.forEach(
+          btn => {
+
+            btn.classList.toggle(
+              "active",
+              btn === button
             );
-
-          document
-            .querySelectorAll(".a-step")
-            .forEach(
-              btn =>
-                btn.classList.toggle(
-                  "active",
-                  btn === button
-                )
-            );
-
-          stopAllPractice();
-
-          renderA();
-        }
-      );
-    }
-  );
+          }
+        );
 
 
-/* =====================================
-   A表示
-===================================== */
+        resetTranscript();
 
-function renderA() {
+        renderStep();
+      }
+    );
+  }
+);
 
-  aPracticeArea.innerHTML = "";
+
+/* ==============================
+   Step表示
+============================== */
+
+function renderStep() {
+
+  step1Area.innerHTML = "";
+  practiceControls.innerHTML = "";
+  hintBox.innerHTML = "";
+
+  statusDisplay.textContent = "";
 
 
-  /*
-   Step 1だけ全文を表示
-  */
+  /* Step 1 */
 
-  if (aStep === 1) {
+  if (currentStep === 1) {
+
+    stepDescription.textContent =
+      "1センテンスずつ、何度でもリピート";
+
+    hintBox.style.display =
+      "none";
+
 
     QUESTION.sentences.forEach(
       (sentence, index) => {
@@ -670,9 +599,8 @@ function renderA() {
           "click",
           () => {
 
-            playAIndividual(
-              index,
-              sentence
+            playStep1Sentence(
+              index
             );
           }
         );
@@ -681,158 +609,216 @@ function renderA() {
         card.appendChild(text);
         card.appendChild(button);
 
-        aPracticeArea.appendChild(
-          card
-        );
+        step1Area.appendChild(card);
       }
+    );
+
+
+    return;
+  }
+
+
+  hintBox.style.display =
+    "block";
+
+
+  /* Step 2 */
+
+  if (currentStep === 2) {
+
+    stepDescription.textContent =
+      "全文を見ながら、1センテンスずつリッスン＆リピート";
+
+    hintBox.innerHTML =
+      QUESTION.sentences.join("<br>");
+
+    createStartButton(
+      "▶ リッスン＆リピート"
     );
 
     return;
   }
 
 
-  /*
-   Step 2：ヒントだけ
-  */
+  /* Step 3 */
 
-  if (aStep === 2) {
+  if (currentStep === 3) {
 
-    QUESTION.aHints.forEach(
-      (hint, index) => {
+    stepDescription.textContent =
+      "ヒントを見ながら、1センテンスずつリッスン＆リピート";
 
-        const card =
-          document.createElement("div");
+    hintBox.textContent =
+      QUESTION.hintFew;
 
-        card.className =
-          "sentence-card";
-
-
-        const text =
-          document.createElement("div");
-
-        text.className =
-          "sentence-text";
-
-        text.textContent =
-          (index + 1) +
-          ". " +
-          hint;
-
-
-        const button =
-          document.createElement("button");
-
-        button.className =
-          "button";
-
-        button.textContent =
-          "▶ この文を聞く";
-
-        button.disabled =
-          segments.length === 0;
-
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            playAIndividual(
-              index,
-              QUESTION.sentences[index]
-            );
-          }
-        );
-
-
-        card.appendChild(text);
-        card.appendChild(button);
-
-        aPracticeArea.appendChild(
-          card
-        );
-      }
+    createStartButton(
+      "▶ リッスン＆リピート"
     );
 
     return;
   }
 
 
-  /*
-   Step 3：答えを表示しない
-  */
+  /* Step 4 */
 
-  QUESTION.sentences.forEach(
-    (sentence, index) => {
+  if (currentStep === 4) {
 
-      const card =
-        document.createElement("div");
+    stepDescription.textContent =
+      "ヒントなしで、1センテンスずつリッスン＆リピート";
 
-      card.className =
-        "sentence-card";
+    hintBox.innerHTML =
+      '<div class="no-hint">ヒントなし</div>';
 
+    createStartButton(
+      "▶ リッスン＆リピート"
+    );
 
-      const text =
-        document.createElement("div");
-
-      text.className =
-        "sentence-text";
-
-      text.textContent =
-        "Sentence " +
-        (index + 1);
+    return;
+  }
 
 
-      const button =
-        document.createElement("button");
+  /* Step 5 */
 
-      button.className =
-        "button";
+  if (currentStep === 5) {
 
-      button.textContent =
-        "▶ この文を聞く";
+    stepDescription.textContent =
+      "全文を聞いてから、まとめてリピート";
 
-      button.disabled =
-        segments.length === 0;
+    hintBox.textContent =
+      QUESTION.hintMany;
 
+    createStartButton(
+      "▶ 全文を聞く"
+    );
 
-      button.addEventListener(
-        "click",
-        () => {
-
-          playAIndividual(
-            index,
-            sentence
-          );
-        }
-      );
+    return;
+  }
 
 
-      card.appendChild(text);
-      card.appendChild(button);
+  /* Step 6 */
 
-      aPracticeArea.appendChild(
-        card
+  if (currentStep === 6) {
+
+    stepDescription.textContent =
+      "全文を聞いてから、まとめてリピート";
+
+    hintBox.textContent =
+      QUESTION.hintFew;
+
+    createStartButton(
+      "▶ 全文を聞く"
+    );
+
+    return;
+  }
+
+
+  /* Step 7 */
+
+  if (currentStep === 7) {
+
+    stepDescription.textContent =
+      "全文を聞いてから、ヒントなしでまとめてリピート";
+
+    hintBox.innerHTML =
+      '<div class="no-hint">ヒントなし</div>';
+
+    createStartButton(
+      "▶ 全文を聞く"
+    );
+  }
+}
+
+
+/* ==============================
+   開始ボタン
+============================== */
+
+function createStartButton(label) {
+
+  const button =
+    document.createElement("button");
+
+  button.className =
+    "button primary";
+
+  button.textContent =
+    label;
+
+  button.disabled =
+    segments.length === 0;
+
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      if (
+        currentStep >= 2 &&
+        currentStep <= 4
+      ) {
+
+        startSentenceBySentence();
+
+      } else {
+
+        startWholeRetention();
+      }
+    }
+  );
+
+
+  practiceControls.appendChild(
+    button
+  );
+
+
+  const pause =
+    document.createElement("button");
+
+  pause.id =
+    "practicePauseButton";
+
+  pause.className =
+    "button";
+
+  pause.textContent =
+    "一時停止";
+
+  pause.disabled =
+    true;
+
+
+  pause.addEventListener(
+    "click",
+    () => {
+
+      togglePause(
+        pause
       );
     }
+  );
+
+
+  practiceControls.appendChild(
+    pause
   );
 }
 
 
-/* =====================================
-   A：1文ずつ
-===================================== */
+/* ==============================
+   Step 1
+============================== */
 
-function playAIndividual(
-  index,
-  target
-) {
+function playStep1Sentence(index) {
 
   stopAllPractice();
 
   resetTranscript();
 
-  currentTarget =
-    target;
+
+  activeTarget =
+    QUESTION.sentences[index];
+
 
   statusDisplay.textContent =
     "Sentence " +
@@ -846,146 +832,242 @@ function playAIndividual(
       statusDisplay.textContent =
         "Repeat";
 
-      /*
-       お手本終了後にだけ
-       文字起こし開始
-      */
 
       startRecognition(
-        currentTarget
+        activeTarget,
+        false
+      );
+
+
+      showRepeatFinishButton(
+        activeTarget
       );
     }
   );
 }
 
 
-/* =====================================
-   B Step切替
-===================================== */
+/* ==============================
+   Step 2〜4
+============================== */
 
-document
-  .querySelectorAll(".b-step")
-  .forEach(
-    button => {
+function startSentenceBySentence() {
 
-      button.addEventListener(
-        "click",
+  stopAllPractice();
+
+  resetTranscript();
+
+  accumulatedTranscript = [];
+
+  currentSegment = 0;
+
+  practiceRunning = true;
+
+  playNextSentence();
+}
+
+
+function playNextSentence() {
+
+  if (
+    !practiceRunning ||
+    currentSegment >=
+      QUESTION.sentences.length
+  ) {
+
+    practiceRunning = false;
+
+    statusDisplay.textContent = "";
+
+    evaluateAccumulated();
+
+    return;
+  }
+
+
+  stopRecognition();
+
+
+  statusDisplay.textContent =
+    "Sentence " +
+    (currentSegment + 1);
+
+
+  playSegment(
+    currentSegment,
+    () => {
+
+      statusDisplay.textContent =
+        "Repeat";
+
+
+      const target =
+        QUESTION.sentences[
+          currentSegment
+        ];
+
+
+      const wordCount =
+        target
+          .split(/\s+/)
+          .length;
+
+
+      const pauseMs =
+        calculateRepeatPause(
+          wordCount
+        );
+
+
+      startRecognition(
+        target,
+        true
+      );
+
+
+      repeatTimer =
+        setTimeout(
+          () => {
+
+            finishRecognition(
+              () => {
+
+                currentSegment++;
+
+                playNextSentence();
+              }
+            );
+
+          },
+          pauseMs
+        );
+    }
+  );
+}
+
+
+/* ==============================
+   Step 5〜7
+============================== */
+
+function startWholeRetention() {
+
+  stopAllPractice();
+
+  resetTranscript();
+
+  practiceRunning = true;
+
+
+  statusDisplay.textContent =
+    "Listen";
+
+
+  stopRecognition();
+
+
+  answerPlayer.currentTime = 0;
+
+
+  answerPlayer.onended =
+    function() {
+
+      answerPlayer.onended = null;
+
+
+      if (!practiceRunning) {
+        return;
+      }
+
+
+      statusDisplay.textContent =
+        "Repeat";
+
+
+      const target =
+        QUESTION.sentences.join(" ");
+
+
+      startRecognition(
+        target,
+        false
+      );
+
+
+      showRepeatFinishButton(
+        target
+      );
+    };
+
+
+  answerPlayer.play();
+
+  enablePauseButton();
+}
+
+
+/* ==============================
+   手動Repeat終了
+============================== */
+
+function showRepeatFinishButton(
+  target
+) {
+
+  const old =
+    document.getElementById(
+      "repeatFinishButton"
+    );
+
+
+  if (old) {
+    old.remove();
+  }
+
+
+  const button =
+    document.createElement("button");
+
+  button.id =
+    "repeatFinishButton";
+
+  button.className =
+    "button primary";
+
+  button.textContent =
+    "■ リピート終了・判定";
+
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      finishRecognition(
         () => {
 
-          bStep =
-            Number(
-              button.dataset.step
-            );
+          button.remove();
 
+          statusDisplay.textContent =
+            "";
 
-          document
-            .querySelectorAll(".b-step")
-            .forEach(
-              btn =>
-                btn.classList.toggle(
-                  "active",
-                  btn === button
-                )
-            );
-
-
-          stopAllPractice();
-
-          renderB();
+          evaluateCurrent(
+            target
+          );
         }
       );
     }
   );
 
 
-/* =====================================
-   B表示
-===================================== */
-
-function renderB() {
-
-  if (bStep === 1) {
-
-    bHintBox.textContent =
-      QUESTION.bHintMany;
-
-    return;
-  }
-
-
-  if (bStep === 2) {
-
-    bHintBox.textContent =
-      QUESTION.bHintFew;
-
-    return;
-  }
-
-
-  bHintBox.innerHTML =
-    '<div class="no-hint">ヒントなし</div>';
+  practiceControls.appendChild(
+    button
+  );
 }
 
 
-/* =====================================
-   B：3文全部聞いてからRepeat
-===================================== */
-
-bPlayButton.addEventListener(
-  "click",
-  () => {
-
-    stopAllPractice();
-
-    resetTranscript();
-
-
-    const target =
-      QUESTION.sentences.join(" ");
-
-
-    currentTarget =
-      target;
-
-
-    statusDisplay.textContent =
-      "Listen";
-
-
-    /*
-     Bでは元の3センテンス音声を
-     ポーズなしでそのまま再生
-    */
-
-    answerPlayer.currentTime = 0;
-
-
-    answerPlayer.onended =
-      function() {
-
-        statusDisplay.textContent =
-          "Repeat";
-
-
-        /*
-         お手本音声終了後に
-         学習者の声だけ認識
-        */
-
-        startRecognition(
-          target
-        );
-      };
-
-
-    answerPlayer.play();
-  }
-);
-
-
-/* =====================================
-   センテンス区間再生
-===================================== */
+/* ==============================
+   区間再生
+============================== */
 
 function playSegment(
   index,
@@ -1008,27 +1090,21 @@ function playSegment(
     segments[index];
 
 
+  answerPlayer.onended = null;
+
   answerPlayer.currentTime =
     segment.start;
 
   segmentEndTime =
     segment.end;
 
-  currentCallback =
+  answerPlayer._callback =
     callback;
-
-  isPaused = false;
-
-
-  pauseButton.disabled =
-    false;
-
-  pauseButton.textContent =
-    "一時停止";
 
 
   answerPlayer.play();
 
+  enablePauseButton();
 
   monitorSegment();
 }
@@ -1051,18 +1127,17 @@ function monitorSegment() {
 
         answerPlayer.pause();
 
-        pauseButton.disabled =
-          true;
+        disablePauseButton();
 
 
-        if (currentCallback) {
+        const callback =
+          answerPlayer._callback;
 
-          const callback =
-            currentCallback;
+        answerPlayer._callback =
+          null;
 
-          currentCallback =
-            null;
 
+        if (callback) {
           callback();
         }
 
@@ -1090,48 +1165,112 @@ function monitorSegment() {
 }
 
 
-/* =====================================
+/* ==============================
+   Repeatポーズ
+============================== */
+
+function calculateRepeatPause(
+  wordCount
+) {
+
+  if (wordCount <= 8) {
+    return 3000;
+  }
+
+  if (wordCount <= 14) {
+    return 4000;
+  }
+
+  if (wordCount <= 20) {
+    return 5000;
+  }
+
+  return 6000;
+}
+
+
+/* ==============================
    一時停止
-===================================== */
+============================== */
 
-pauseButton.addEventListener(
-  "click",
-  () => {
+function enablePauseButton() {
 
-    if (!isPaused) {
+  const button =
+    document.getElementById(
+      "practicePauseButton"
+    );
 
-      isPaused = true;
 
-      answerPlayer.pause();
+  if (button) {
+    button.disabled = false;
+  }
+}
 
-      cancelAnimationFrame(
-        animationId
-      );
 
-      pauseButton.textContent =
-        "再開";
+function disablePauseButton() {
 
-    } else {
+  const button =
+    document.getElementById(
+      "practicePauseButton"
+    );
 
-      isPaused = false;
 
-      pauseButton.textContent =
-        "一時停止";
+  if (button) {
 
-      answerPlayer.play();
+    button.disabled = true;
+
+    button.textContent =
+      "一時停止";
+  }
+
+
+  isPaused = false;
+}
+
+
+function togglePause(button) {
+
+  if (!isPaused) {
+
+    isPaused = true;
+
+    answerPlayer.pause();
+
+    cancelAnimationFrame(
+      animationId
+    );
+
+    button.textContent =
+      "再開";
+
+  } else {
+
+    isPaused = false;
+
+    button.textContent =
+      "一時停止";
+
+    answerPlayer.play();
+
+
+    if (
+      currentStep >= 2 &&
+      currentStep <= 4
+    ) {
 
       monitorSegment();
     }
   }
-);
+}
 
 
-/* =====================================
-   文字起こし
-===================================== */
+/* ==============================
+   文字起こし開始
+============================== */
 
 function startRecognition(
-  target
+  target,
+  autoAccumulate
 ) {
 
   stopRecognition();
@@ -1146,8 +1285,11 @@ function startRecognition(
   }
 
 
-  finalTranscript = "";
-  interimTranscript = "";
+  activeTarget =
+    target;
+
+  recognitionFinal = "";
+  recognitionInterim = "";
 
 
   recognition =
@@ -1167,7 +1309,7 @@ function startRecognition(
   recognition.onresult =
     function(event) {
 
-      interimTranscript = "";
+      recognitionInterim = "";
 
 
       for (
@@ -1184,44 +1326,62 @@ function startRecognition(
 
 
         if (
-          event.results[i]
-            .isFinal
+          event.results[i].isFinal
         ) {
 
-          finalTranscript +=
+          recognitionFinal +=
             text + " ";
 
         } else {
 
-          interimTranscript +=
+          recognitionInterim +=
             text;
         }
       }
 
 
-      const transcript =
+      const currentText =
         (
-          finalTranscript +
-          interimTranscript
+          recognitionFinal +
+          recognitionInterim
         ).trim();
 
 
-      transcriptDisplay.textContent =
-        transcript;
+      if (autoAccumulate) {
+
+        const previous =
+          accumulatedTranscript
+            .filter(Boolean)
+            .join(" ");
 
 
-      updateJudgment(
-        transcript,
+        transcriptDisplay.textContent =
+          (
+            previous +
+            " " +
+            currentText
+          ).trim();
+
+      } else {
+
+        transcriptDisplay.textContent =
+          currentText;
+      }
+
+
+      updateLiveJudgment(
+        currentText,
         target
       );
     };
 
 
   recognition.onerror =
-    function(error) {
+    function(event) {
 
       console.log(
-        error
+        "SpeechRecognition:",
+        event.error
       );
     };
 
@@ -1229,8 +1389,18 @@ function startRecognition(
   recognition.onend =
     function() {
 
-      recognitionActive =
-        false;
+      if (
+        recognitionFinishCallback
+      ) {
+
+        const callback =
+          recognitionFinishCallback;
+
+        recognitionFinishCallback =
+          null;
+
+        callback();
+      }
     };
 
 
@@ -1238,18 +1408,113 @@ function startRecognition(
 
     recognition.start();
 
-    recognitionActive =
-      true;
-
   } catch (error) {}
 }
 
 
-/* =====================================
+/* ==============================
    文字起こし停止
-===================================== */
+============================== */
+
+function finishRecognition(
+  callback
+) {
+
+  if (!recognition) {
+
+    if (callback) {
+      callback();
+    }
+
+    return;
+  }
+
+
+  recognitionFinishCallback =
+    () => {
+
+      const text =
+        (
+          recognitionFinal +
+          recognitionInterim
+        ).trim();
+
+
+      if (
+        currentStep >= 2 &&
+        currentStep <= 4
+      ) {
+
+        accumulatedTranscript[
+          currentSegment
+        ] = text;
+
+
+        transcriptDisplay.textContent =
+          accumulatedTranscript
+            .filter(Boolean)
+            .join(" ");
+      }
+
+
+      recognition = null;
+
+
+      if (callback) {
+        callback();
+      }
+    };
+
+
+  try {
+
+    recognition.stop();
+
+  } catch (error) {
+
+    const fn =
+      recognitionFinishCallback;
+
+    recognitionFinishCallback =
+      null;
+
+    recognition = null;
+
+
+    if (fn) {
+      fn();
+    }
+  }
+
+
+  setTimeout(
+    () => {
+
+      if (
+        recognitionFinishCallback
+      ) {
+
+        const fn =
+          recognitionFinishCallback;
+
+        recognitionFinishCallback =
+          null;
+
+        recognition = null;
+
+        fn();
+      }
+
+    },
+    500
+  );
+}
+
 
 function stopRecognition() {
+
+  recognitionFinishCallback = null;
+
 
   if (recognition) {
 
@@ -1257,32 +1522,27 @@ function stopRecognition() {
 
 
     try {
-
       recognition.stop();
-
     } catch (error) {}
   }
 
 
   recognition = null;
-
-  recognitionActive = false;
 }
 
 
-/* =====================================
+/* ==============================
    判定
-===================================== */
+============================== */
 
-function updateJudgment(
-  transcript,
+function updateLiveJudgment(
+  spoken,
   target
 ) {
 
-  if (!transcript) {
+  if (!spoken) {
 
-    judgmentDisplay.textContent =
-      "";
+    judgmentDisplay.textContent = "";
 
     return;
   }
@@ -1290,10 +1550,62 @@ function updateJudgment(
 
   const score =
     calculateSimilarity(
-      transcript,
+      spoken,
       target
     );
 
+
+  showScore(score);
+}
+
+
+function evaluateCurrent(target) {
+
+  const spoken =
+    transcriptDisplay
+      .textContent
+      .trim();
+
+
+  const score =
+    calculateSimilarity(
+      spoken,
+      target
+    );
+
+
+  showScore(score);
+}
+
+
+function evaluateAccumulated() {
+
+  const spoken =
+    accumulatedTranscript
+      .filter(Boolean)
+      .join(" ");
+
+
+  const target =
+    QUESTION.sentences.join(" ");
+
+
+  transcriptDisplay.textContent =
+    spoken;
+
+
+  const score =
+    calculateSimilarity(
+      spoken,
+      target
+    );
+
+
+  showScore(score);
+}
+
+
+function showScore(score) {
 
   if (score >= PASS_SCORE) {
 
@@ -1312,30 +1624,30 @@ function updateJudgment(
 }
 
 
-/* =====================================
-   単語単位の一致率
-===================================== */
+/* ==============================
+   一致率
+============================== */
 
 function calculateSimilarity(
   spoken,
   target
 ) {
 
-  const a =
+  const spokenWords =
     normalize(spoken)
       .split(" ")
       .filter(Boolean);
 
 
-  const b =
+  const targetWords =
     normalize(target)
       .split(" ")
       .filter(Boolean);
 
 
   if (
-    a.length === 0 ||
-    b.length === 0
+    spokenWords.length === 0 ||
+    targetWords.length === 0
   ) {
 
     return 0;
@@ -1344,29 +1656,24 @@ function calculateSimilarity(
 
   const distance =
     levenshteinWords(
-      a,
-      b
+      spokenWords,
+      targetWords
     );
 
 
-  const maxLength =
+  const length =
     Math.max(
-      a.length,
-      b.length
-    );
-
-
-  const score =
-    Math.max(
-      0,
-      1 -
-      distance /
-      maxLength
+      spokenWords.length,
+      targetWords.length
     );
 
 
   return Math.round(
-    score * 100
+    Math.max(
+      0,
+      1 -
+      distance / length
+    ) * 100
   );
 }
 
@@ -1375,10 +1682,7 @@ function normalize(text) {
 
   return String(text || "")
     .toLowerCase()
-    .replace(
-      /[’']/g,
-      ""
-    )
+    .replace(/[’']/g, "")
     .replace(
       /[^a-z0-9\s]/g,
       " "
@@ -1450,11 +1754,8 @@ function levenshteinWords(
 
       matrix[i][j] =
         Math.min(
-
           matrix[i - 1][j] + 1,
-
           matrix[i][j - 1] + 1,
-
           matrix[i - 1][j - 1] +
             cost
         );
@@ -1470,25 +1771,29 @@ function levenshteinWords(
 }
 
 
-/* =====================================
-   文字起こし表示リセット
-===================================== */
+/* ==============================
+   表示リセット
+============================== */
 
 function resetTranscript() {
 
   stopRecognition();
 
+  accumulatedTranscript = [];
+
+
   transcriptDisplay.textContent =
-    "";
+    "リピートした英文がここに表示されます.";
+
 
   judgmentDisplay.textContent =
     "";
 }
 
 
-/* =====================================
-   任意録音
-===================================== */
+/* ==============================
+   録音
+============================== */
 
 recordButton.addEventListener(
   "click",
@@ -1574,9 +1879,7 @@ recordButton.addEventListener(
               "audio"
             );
 
-
-          audio.controls =
-            true;
+          audio.controls = true;
 
           audio.src =
             recordedUrl;
@@ -1596,8 +1899,7 @@ recordButton.addEventListener(
                   track.stop()
               );
 
-            recordStream =
-              null;
+            recordStream = null;
           }
         };
 
@@ -1607,7 +1909,6 @@ recordButton.addEventListener(
 
       recordStatus.textContent =
         "● Recording";
-
 
       recordButton.disabled =
         true;
@@ -1651,15 +1952,19 @@ stopRecordButton.addEventListener(
 );
 
 
-/* =====================================
-   練習音声停止
-===================================== */
+/* ==============================
+   全停止
+============================== */
 
-function stopPracticeAudio() {
+function stopAllPractice() {
+
+  practiceRunning = false;
+
 
   clearTimeout(
-    pauseTimer
+    repeatTimer
   );
+
 
   cancelAnimationFrame(
     animationId
@@ -1672,30 +1977,33 @@ function stopPracticeAudio() {
     null;
 
 
+  stopRecognition();
+
+
   isPaused = false;
 
-  pauseButton.disabled =
-    true;
+  disablePauseButton();
 
-  pauseButton.textContent =
-    "一時停止";
-}
-
-
-function stopAllPractice() {
-
-  stopPracticeAudio();
-
-  stopRecognition();
 
   statusDisplay.textContent =
     "";
+
+
+  const finishButton =
+    document.getElementById(
+      "repeatFinishButton"
+    );
+
+
+  if (finishButton) {
+    finishButton.remove();
+  }
 }
 
 
-/* =====================================
-   音声分割準備
-===================================== */
+/* ==============================
+   音声分割
+============================== */
 
 async function prepareSegments() {
 
@@ -1712,17 +2020,12 @@ async function prepareSegments() {
       "";
 
 
-    bPlayButton.disabled =
-      false;
-
-
-    renderA();
+    renderStep();
 
 
   } catch (error) {
 
     console.error(error);
-
 
     loadingDisplay.textContent =
       "音声を正しく分割できませんでした。";
@@ -1730,9 +2033,9 @@ async function prepareSegments() {
 }
 
 
-/* =====================================
+/* ==============================
    無音検出
-===================================== */
+============================== */
 
 async function detectSentenceSegments(
   file,
@@ -1741,6 +2044,14 @@ async function detectSentenceSegments(
 
   const response =
     await fetch(file);
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Audio fetch failed"
+    );
+  }
 
 
   const arrayBuffer =
@@ -1797,10 +2108,8 @@ async function detectSentenceSegments(
   const sampleRate =
     audioBuffer.sampleRate;
 
-
   const frameSeconds =
     0.02;
-
 
   const frameSize =
     Math.floor(
@@ -1912,8 +2221,36 @@ async function detectSentenceSegments(
       }
 
 
-      silenceStart =
-        null;
+      silenceStart = null;
+    }
+  }
+
+
+  if (
+    silenceStart !== null
+  ) {
+
+    const silenceEnd =
+      audioBuffer.duration;
+
+
+    if (
+      silenceEnd -
+      silenceStart >=
+      MIN_SILENCE_SECONDS
+    ) {
+
+      silenceRanges.push({
+        start:
+          silenceStart,
+
+        end:
+          silenceEnd,
+
+        duration:
+          silenceEnd -
+          silenceStart
+      });
     }
   }
 
@@ -2035,8 +2372,7 @@ async function detectSentenceSegments(
         end:
           Math.min(
             actualEnd,
-            gap.start +
-            0.05
+            gap.start + 0.05
           )
 
       });
@@ -2045,8 +2381,7 @@ async function detectSentenceSegments(
       sentenceStart =
         Math.max(
           0,
-          gap.end -
-          0.05
+          gap.end - 0.05
         );
     }
   );
