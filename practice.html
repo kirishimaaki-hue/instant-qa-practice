@@ -19,66 +19,16 @@ body {
 }
 
 .app {
-  display: flex;
-  max-width: 1200px;
-  min-height: 100vh;
+  max-width: 900px;
   margin: 0 auto;
+  min-height: 100vh;
   background: white;
+  padding: 36px 42px 60px;
 }
 
-/* =========================
-   左メニュー
-========================= */
-
-.sidebar {
-  width: 250px;
-  border-right: 1px solid #ddd;
-  padding: 28px 18px;
-  background: #fafafa;
-}
-
-.sidebar-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 22px;
-}
-
-.question-menu {
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: white;
-  padding: 15px 14px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  font-size: 17px;
-  cursor: pointer;
-  border: 1px solid #ddd;
-}
-
-.question-menu:hover {
-  background: #f0f0f0;
-}
-
-.question-menu.active {
-  background: #111;
-  color: white;
-  border-color: #111;
-}
-
-/* =========================
-   メイン
-========================= */
-
-.main {
-  flex: 1;
-  padding: 40px 50px 70px;
-}
-
-.topic-title {
+h1 {
   font-size: 34px;
-  font-weight: bold;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .question {
@@ -87,179 +37,170 @@ body {
   margin-bottom: 16px;
 }
 
-.question-audio-area {
-  margin-bottom: 34px;
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
 }
 
 button {
   font-family: inherit;
+  cursor: pointer;
 }
 
 .action-button {
   font-size: 17px;
   padding: 11px 18px;
-  margin-right: 8px;
-  border: 1px solid #999;
+  border: 1px solid #888;
   background: white;
   border-radius: 6px;
-  cursor: pointer;
 }
 
-.action-button:hover {
-  background: #f4f4f4;
-}
-
-.action-button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.main-practice-controls {
-  margin: 26px 0 18px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.auto-button {
+.main-button {
   font-size: 18px;
   padding: 13px 20px;
+  border: none;
   background: #111;
   color: white;
-  border: none;
   border-radius: 7px;
-  cursor: pointer;
 }
 
-.auto-button:disabled {
+button:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.pause-button {
-  font-size: 18px;
-  padding: 12px 20px;
+.step-area {
+  margin: 32px 0 22px;
+}
+
+.step-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.step-button {
+  font-size: 17px;
+  padding: 11px 16px;
+  border: 1px solid #bbb;
   background: white;
-  border: 1px solid #888;
   border-radius: 7px;
-  cursor: pointer;
 }
 
-.pause-button:disabled {
-  opacity: 0.4;
-  cursor: default;
+.step-button.active {
+  background: #111;
+  color: white;
 }
 
-/* =========================
-   Sentence / Repeat 表示
-========================= */
+.hint-box {
+  min-height: 110px;
+  padding: 22px;
+  margin-top: 18px;
+  background: #f5f5f5;
+  border-radius: 9px;
+}
+
+.full-answer {
+  font-size: 21px;
+  line-height: 1.8;
+}
+
+.hints {
+  font-size: 21px;
+  line-height: 1.8;
+  font-weight: bold;
+}
+
+.no-hint {
+  font-size: 20px;
+  color: #777;
+  text-align: center;
+  padding-top: 20px;
+}
 
 #status {
-  min-height: 42px;
+  min-height: 40px;
   font-size: 24px;
   font-weight: bold;
-  margin: 12px 0 8px;
-}
-
-/* =========================
-   センテンス
-========================= */
-
-.sentences {
-  margin-top: 15px;
+  margin: 16px 0 8px;
 }
 
 .sentence-card {
   background: #f5f5f5;
-  padding: 20px 22px;
-  margin-bottom: 16px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
   border-radius: 9px;
 }
 
 .sentence-text {
-  font-size: 21px;
+  font-size: 20px;
   line-height: 1.6;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.sentence-number {
-  font-weight: bold;
+.record-area {
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 1px solid #ddd;
 }
 
-.listen-button {
-  font-size: 16px;
-  padding: 9px 15px;
-  border: 1px solid #888;
-  background: white;
-  border-radius: 5px;
+.record-toggle {
+  font-size: 18px;
+  margin-bottom: 18px;
+}
+
+.record-toggle label {
   cursor: pointer;
 }
 
-.listen-button:disabled {
-  opacity: 0.4;
-  cursor: default;
+#recordingStatus {
+  min-height: 28px;
+  font-size: 19px;
+  font-weight: bold;
 }
 
-/* =========================
-   解析中
-========================= */
+.recording {
+  color: #c40000;
+}
+
+.transcript-title {
+  font-weight: bold;
+  margin-top: 16px;
+  margin-bottom: 7px;
+}
+
+#transcript {
+  min-height: 90px;
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 19px;
+  line-height: 1.6;
+}
 
 #loading {
-  font-size: 15px;
   color: #777;
-  min-height: 24px;
+  min-height: 22px;
 }
 
-/* =========================
-   スマホ
-========================= */
-
-@media (max-width: 760px) {
-
+@media (max-width: 600px) {
   .app {
-    display: block;
+    padding: 22px 16px 45px;
   }
 
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #ddd;
-    padding: 15px;
-  }
-
-  .sidebar-title {
-    margin-bottom: 10px;
-  }
-
-  .question-list {
-    display: flex;
-    gap: 8px;
-  }
-
-  .question-menu {
-    margin-bottom: 0;
-  }
-
-  .main {
-    padding: 28px 20px 50px;
-  }
-
-  .topic-title {
+  h1 {
     font-size: 28px;
-    margin-bottom: 28px;
   }
 
   .question {
     font-size: 25px;
   }
 
-  .sentence-text {
+  .full-answer,
+  .hints {
     font-size: 19px;
-  }
-
-  #status {
-    font-size: 21px;
   }
 }
 </style>
@@ -269,160 +210,132 @@ button {
 
 <div class="app">
 
-  <!-- 左メニュー -->
-  <aside class="sidebar">
+  <h1>Favorites 練習</h1>
 
-    <div class="sidebar-title">
-      問題一覧
-    </div>
+  <div class="question">
+    Q1. What's your favorite season?
+  </div>
 
-    <div class="question-list">
+  <div class="controls">
+    <button id="questionAudioButton" class="action-button">
+      ▶ 質問を聞く
+    </button>
+  </div>
 
-      <button
-        class="question-menu active"
-        data-index="0">
-        Q1
+  <div class="step-area">
+
+    <div class="step-buttons">
+      <button class="step-button active" data-step="1">
+        Step 1
       </button>
 
-      <button
-        class="question-menu"
-        data-index="1">
-        Q2
+      <button class="step-button" data-step="2">
+        Step 2
       </button>
 
-    </div>
+      <button class="step-button" data-step="3">
+        Step 3
+      </button>
 
-  </aside>
-
-
-  <!-- メイン画面 -->
-  <main class="main">
-
-    <div class="topic-title">
-      Favorites 練習
-    </div>
-
-    <div id="question" class="question"></div>
-
-    <div class="question-audio-area">
-      <button
-        id="questionAudioButton"
-        class="action-button">
-        ▶ 質問を聞く
+      <button class="step-button" data-step="4">
+        Step 4
       </button>
     </div>
 
-    <div class="main-practice-controls">
+    <div id="hintBox" class="hint-box"></div>
 
-      <button
-        id="autoButton"
-        class="auto-button"
-        disabled>
-        ▶ 英文をまとめてリッスン＆リピート
-      </button>
+  </div>
 
-      <button
-        id="pauseButton"
-        class="pause-button"
-        disabled>
-        一時停止
-      </button>
+  <div class="controls">
+    <button id="autoButton" class="main-button" disabled>
+      ▶ 英文をまとめてリッスン＆リピート
+    </button>
 
+    <button id="pauseButton" class="action-button" disabled>
+      一時停止
+    </button>
+  </div>
+
+  <div id="status"></div>
+
+  <div id="loading">
+    音声を読み込んでいます…
+  </div>
+
+  <div id="sentences"></div>
+
+
+  <div class="record-area">
+
+    <div class="record-toggle">
+      <label>
+        <input type="checkbox" id="recordToggle">
+        自分の声を録音・文字起こしする
+      </label>
     </div>
 
-    <div id="status"></div>
+    <div id="recordingStatus"></div>
 
-    <div id="loading">
-      音声を読み込んでいます…
+    <div class="transcript-title">
+      リアルタイム文字起こし
     </div>
 
-    <div id="sentences" class="sentences"></div>
+    <div id="transcript">
+      録音をONにすると、ここに発話が表示されます。
+    </div>
 
-  </main>
+  </div>
 
 </div>
 
 
 <script>
 
-/* ==================================================
-   Q1・Q2 データ
-================================================== */
+/* =========================
+   Q1データ
+========================= */
 
-const QUESTIONS = [
+const QUESTION = {
+  questionAudio: "fav01.mp3",
+  answerAudio: "yasmin_fav01.mp3",
 
-  {
-    no: 1,
+  sentences: [
+    "My favorite season is summer.",
+    "I hate cold weather.",
+    "Summers here are humid and tough, but I still prefer summer."
+  ],
 
-    question:
-      "What's your favorite season?",
+  step2:
+    "favorite season / summer / hate cold weather / humid / tough / still prefer summer",
 
-    questionAudio:
-      "fav01.mp3",
-
-    answerAudio:
-      "yasmin_fav01.mp3",
-
-    sentences: [
-      "My favorite season is summer.",
-      "I hate cold weather.",
-      "Summers here are humid and tough, but I still prefer summer."
-    ]
-  },
-
-  {
-    no: 2,
-
-    question:
-      "What kind of weather do you like?",
-
-    questionAudio:
-      "fav02.mp3",
-
-    answerAudio:
-      "yasmin_fav02.mp3",
-
-    sentences: [
-      "I like cloudy and calm weather.",
-      "I play tennis.",
-      "Windy or sunny days make it harder to play well."
-    ]
-  }
-
-];
+  step3:
+    "summer / cold / humid / prefer summer"
+};
 
 
-/* ==================================================
-   無音検出設定
-================================================== */
+/* =========================
+   音声分割設定
+========================= */
 
 const MIN_SILENCE_SECONDS = 0.25;
-
 const SILENCE_THRESHOLD = 0.02;
 
 
-/* ==================================================
-   状態
-================================================== */
-
-let currentQuestionIndex = 0;
-
-let segmentCache = {};
+/* =========================
+   音声状態
+========================= */
 
 let segments = [];
 
-let player = new Audio();
+let player =
+  new Audio(
+    QUESTION.answerAudio
+  );
 
-let questionPlayer = new Audio();
-
-let playbackMode = null;
-
-/*
- playbackMode:
- "individual"
- "auto"
- null
-*/
+let questionPlayer =
+  new Audio(
+    QUESTION.questionAudio
+  );
 
 let currentSegmentIndex = 0;
 
@@ -434,10 +347,7 @@ let autoRunning = false;
 
 let isPaused = false;
 
-
-/*
-Repeatポーズ関連
-*/
+let inRepeatPause = false;
 
 let repeatTimer = null;
 
@@ -445,164 +355,290 @@ let repeatDeadline = null;
 
 let remainingRepeatMs = 0;
 
-let inRepeatPause = false;
+
+/* =========================
+   録音・文字起こし
+========================= */
+
+let mediaStream = null;
+let mediaRecorder = null;
+let audioChunks = [];
+
+let recognition = null;
+
+let recordingEnabled = false;
+let recognitionRunning = false;
+
+let finalTranscript = "";
+let interimTranscript = "";
+
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
 
 
-/* ==================================================
+/* =========================
    DOM
-================================================== */
-
-const questionDisplay =
-  document.getElementById("question");
-
-const sentencesDisplay =
-  document.getElementById("sentences");
+========================= */
 
 const questionAudioButton =
-  document.getElementById("questionAudioButton");
+  document.getElementById(
+    "questionAudioButton"
+  );
 
 const autoButton =
-  document.getElementById("autoButton");
+  document.getElementById(
+    "autoButton"
+  );
 
 const pauseButton =
-  document.getElementById("pauseButton");
+  document.getElementById(
+    "pauseButton"
+  );
 
 const statusDisplay =
-  document.getElementById("status");
+  document.getElementById(
+    "status"
+  );
 
 const loadingDisplay =
-  document.getElementById("loading");
+  document.getElementById(
+    "loading"
+  );
 
-const menuButtons =
+const sentencesDisplay =
+  document.getElementById(
+    "sentences"
+  );
+
+const hintBox =
+  document.getElementById(
+    "hintBox"
+  );
+
+const stepButtons =
   document.querySelectorAll(
-    ".question-menu"
+    ".step-button"
+  );
+
+const recordToggle =
+  document.getElementById(
+    "recordToggle"
+  );
+
+const recordingStatus =
+  document.getElementById(
+    "recordingStatus"
+  );
+
+const transcriptDisplay =
+  document.getElementById(
+    "transcript"
   );
 
 
-/* ==================================================
-   最初にQ1表示
-================================================== */
+/* =========================
+   初期表示
+========================= */
 
-selectQuestion(0);
+renderStep(1);
+renderSentences();
+
+prepareAudioSegments();
 
 
-/* ==================================================
-   左メニュー
-================================================== */
+/* =========================
+   Step切替
+========================= */
 
-menuButtons.forEach(
+stepButtons.forEach(
   button => {
 
     button.addEventListener(
       "click",
       () => {
 
-        const index =
+        const step =
           Number(
-            button.dataset.index
+            button.dataset.step
           );
 
-        selectQuestion(index);
+        renderStep(step);
+
+
+        stepButtons.forEach(
+          btn => {
+
+            btn.classList.toggle(
+              "active",
+              btn === button
+            );
+          }
+        );
       }
     );
   }
 );
 
 
-/* ==================================================
-   問題選択
-================================================== */
+function renderStep(step) {
 
-async function selectQuestion(index) {
-
-  stopEverything();
-
-  currentQuestionIndex = index;
-
-  const q =
-    QUESTIONS[index];
+  hintBox.innerHTML = "";
 
 
-  menuButtons.forEach(
-    (button, i) => {
+  if (step === 1) {
 
-      button.classList.toggle(
-        "active",
-        i === index
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "full-answer";
+
+    div.innerHTML =
+      QUESTION.sentences
+        .map(
+          sentence =>
+            sentence
+        )
+        .join("<br>");
+
+    hintBox.appendChild(div);
+
+    return;
+  }
+
+
+  if (step === 2) {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "hints";
+
+    div.textContent =
+      QUESTION.step2;
+
+    hintBox.appendChild(div);
+
+    return;
+  }
+
+
+  if (step === 3) {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "hints";
+
+    div.textContent =
+      QUESTION.step3;
+
+    hintBox.appendChild(div);
+
+    return;
+  }
+
+
+  if (step === 4) {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "no-hint";
+
+    div.textContent =
+      "ヒントなし";
+
+    hintBox.appendChild(div);
+  }
+}
+
+
+/* =========================
+   センテンス表示
+========================= */
+
+function renderSentences() {
+
+  sentencesDisplay.innerHTML = "";
+
+
+  QUESTION.sentences.forEach(
+    (sentence, index) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "sentence-card";
+
+
+      const text =
+        document.createElement("div");
+
+      text.className =
+        "sentence-text";
+
+      text.textContent =
+        (index + 1) +
+        ". " +
+        sentence;
+
+
+      const button =
+        document.createElement("button");
+
+      button.className =
+        "action-button";
+
+      button.textContent =
+        "▶ この文を聞く";
+
+      button.disabled = true;
+
+      button.dataset.index =
+        index;
+
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          playIndividualSentence(
+            index
+          );
+        }
+      );
+
+
+      card.appendChild(text);
+      card.appendChild(button);
+
+      sentencesDisplay.appendChild(
+        card
       );
     }
   );
+}
 
 
-  questionDisplay.textContent =
-    "Q" +
-    q.no +
-    ". " +
-    q.question;
+/* =========================
+   音声分割
+========================= */
 
-
-  renderSentences(q);
-
-
-  statusDisplay.textContent = "";
-
-  loadingDisplay.textContent =
-    "音声を読み込んでいます…";
-
-
-  autoButton.disabled = true;
-  pauseButton.disabled = true;
-
-
-  questionPlayer.src =
-    q.questionAudio;
-
-
-  player.src =
-    q.answerAudio;
-
+async function prepareAudioSegments() {
 
   try {
 
-    if (
-      segmentCache[
-        q.answerAudio
-      ]
-    ) {
-
-      segments =
-        segmentCache[
-          q.answerAudio
-        ];
-
-    } else {
-
-      segments =
-        await detectSentenceSegments(
-          q.answerAudio,
-          q.sentences.length
-        );
-
-
-      segmentCache[
-        q.answerAudio
-      ] =
-        segments;
-    }
-
-
-    /*
-    問題切り替え途中に
-    別の問題をクリックした場合への保険
-    */
-
-    if (
-      currentQuestionIndex !==
-      index
-    ) {
-
-      return;
-    }
+    segments =
+      await detectSentenceSegments(
+        QUESTION.answerAudio,
+        QUESTION.sentences.length
+      );
 
 
     loadingDisplay.textContent = "";
@@ -612,7 +648,7 @@ async function selectQuestion(index) {
 
     document
       .querySelectorAll(
-        ".listen-button"
+        ".sentence-card button"
       )
       .forEach(
         button => {
@@ -632,82 +668,15 @@ async function selectQuestion(index) {
 }
 
 
-/* ==================================================
-   センテンス表示
-================================================== */
-
-function renderSentences(q) {
-
-  sentencesDisplay.innerHTML = "";
-
-
-  q.sentences.forEach(
-    (sentence, index) => {
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "sentence-card";
-
-
-      const text =
-        document.createElement("div");
-
-      text.className =
-        "sentence-text";
-
-
-      text.innerHTML =
-        '<span class="sentence-number">' +
-        (index + 1) +
-        ".</span> " +
-        sentence;
-
-
-      const button =
-        document.createElement("button");
-
-      button.className =
-        "listen-button";
-
-      button.disabled = true;
-
-      button.textContent =
-        "▶ この文を聞く";
-
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          startIndividualSentence(
-            index
-          );
-        }
-      );
-
-
-      card.appendChild(text);
-      card.appendChild(button);
-
-      sentencesDisplay.appendChild(
-        card
-      );
-    }
-  );
-}
-
-
-/* ==================================================
+/* =========================
    質問音声
-================================================== */
+========================= */
 
 questionAudioButton.addEventListener(
   "click",
   () => {
 
-    stopAnswerPlaybackOnly();
+    stopAnswerPlayback();
 
     questionPlayer.currentTime = 0;
 
@@ -716,49 +685,30 @@ questionAudioButton.addEventListener(
 );
 
 
-/* ==================================================
-   個別センテンス
-================================================== */
+/* =========================
+   1文だけ再生
+========================= */
 
-function startIndividualSentence(
+function playIndividualSentence(
   index
 ) {
 
-  stopAnswerPlaybackOnly();
-
-
-  playbackMode =
-    "individual";
-
-  currentSegmentIndex =
-    index;
-
-  isPaused = false;
-
-  inRepeatPause = false;
-
+  stopAnswerPlayback();
 
   statusDisplay.textContent =
     "Sentence " +
     (index + 1);
-
 
   pauseButton.disabled = false;
 
   pauseButton.textContent =
     "一時停止";
 
+  isPaused = false;
 
   playSegment(
     index,
     () => {
-
-      /*
-      個別再生では
-      再生終了後のメッセージ不要
-      */
-
-      playbackMode = null;
 
       pauseButton.disabled = true;
 
@@ -768,34 +718,28 @@ function startIndividualSentence(
 }
 
 
-/* ==================================================
-   通し練習
-================================================== */
+/* =========================
+   まとめて練習
+========================= */
 
 autoButton.addEventListener(
   "click",
   () => {
 
-    stopAnswerPlaybackOnly();
-
-
-    playbackMode =
-      "auto";
+    stopAnswerPlayback();
 
     autoRunning = true;
 
-    isPaused = false;
-
     currentSegmentIndex = 0;
 
-    inRepeatPause = false;
+    isPaused = false;
 
+    inRepeatPause = false;
 
     pauseButton.disabled = false;
 
     pauseButton.textContent =
       "一時停止";
-
 
     playAutoSentence();
   }
@@ -825,11 +769,7 @@ function playAutoSentence() {
     currentSegmentIndex,
     () => {
 
-      if (!autoRunning) {
-
-        return;
-      }
-
+      if (!autoRunning) return;
 
       startRepeatPause();
     }
@@ -837,27 +777,20 @@ function playAutoSentence() {
 }
 
 
-/* ==================================================
-   Repeatポーズ
-================================================== */
+/* =========================
+   Repeat
+========================= */
 
 function startRepeatPause() {
 
   inRepeatPause = true;
 
-
   statusDisplay.textContent =
     "Repeat";
 
 
-  const q =
-    QUESTIONS[
-      currentQuestionIndex
-    ];
-
-
   const sentence =
-    q.sentences[
+    QUESTION.sentences[
       currentSegmentIndex
     ];
 
@@ -920,10 +853,6 @@ function startRepeatTimer(ms) {
 }
 
 
-/* ==================================================
-   文の長さに応じたRepeat時間
-================================================== */
-
 function calculateRepeatPause(
   wordCount
 ) {
@@ -944,19 +873,16 @@ function calculateRepeatPause(
 }
 
 
-/* ==================================================
-   センテンス区間再生
-================================================== */
+/* =========================
+   区間再生
+========================= */
 
 function playSegment(
   index,
   callback
 ) {
 
-  if (!segments[index]) {
-
-    return;
-  }
+  if (!segments[index]) return;
 
 
   cancelAnimationFrame(
@@ -971,18 +897,9 @@ function playSegment(
   currentSegmentIndex =
     index;
 
-
   segmentEndTime =
     segment.end;
 
-
-  /*
-  新しく文を再生するときだけ
-  文頭に移動する。
-
-  一時停止からの再開では
-  この関数を使わない。
-  */
 
   player.currentTime =
     segment.start;
@@ -996,10 +913,6 @@ function playSegment(
   );
 }
 
-
-/* ==================================================
-   再生終了位置を監視
-================================================== */
 
 function monitorSegmentEnd(
   callback
@@ -1020,13 +933,8 @@ function monitorSegmentEnd(
 
         player.pause();
 
-        cancelAnimationFrame(
-          animationFrameId
-        );
-
 
         if (callback) {
-
           callback();
         }
 
@@ -1047,25 +955,20 @@ function monitorSegmentEnd(
     };
 
 
+  player._segmentCallback =
+    callback;
+
+
   animationFrameId =
     requestAnimationFrame(
       check
     );
-
-
-  /*
-  再開時にも同じ終了監視を使うため
-  保存しておく
-  */
-
-  player._segmentCallback =
-    callback;
 }
 
 
-/* ==================================================
-   一時停止
-================================================== */
+/* =========================
+   一時停止 / 再開
+========================= */
 
 pauseButton.addEventListener(
   "click",
@@ -1083,10 +986,6 @@ pauseButton.addEventListener(
 );
 
 
-/* ==================================================
-   停止処理
-================================================== */
-
 function pausePractice() {
 
   isPaused = true;
@@ -1094,10 +993,6 @@ function pausePractice() {
   pauseButton.textContent =
     "再開";
 
-
-  /*
-  音声再生中
-  */
 
   if (!player.paused) {
 
@@ -1110,10 +1005,6 @@ function pausePractice() {
     return;
   }
 
-
-  /*
-  Repeatポーズ中
-  */
 
   if (inRepeatPause) {
 
@@ -1132,10 +1023,6 @@ function pausePractice() {
 }
 
 
-/* ==================================================
-   再開処理
-================================================== */
-
 function resumePractice() {
 
   isPaused = false;
@@ -1143,10 +1030,6 @@ function resumePractice() {
   pauseButton.textContent =
     "一時停止";
 
-
-  /*
-  Repeatポーズ中だった場合
-  */
 
   if (inRepeatPause) {
 
@@ -1157,13 +1040,6 @@ function resumePractice() {
     return;
   }
 
-
-  /*
-  音声途中で止めた場合
-
-  currentTimeを変更しないので、
-  停止した場所からそのまま続く。
-  */
 
   if (
     segmentEndTime !== null &&
@@ -1181,15 +1057,9 @@ function resumePractice() {
 }
 
 
-/* ==================================================
-   通し練習終了
-================================================== */
-
 function finishAutoPractice() {
 
   autoRunning = false;
-
-  playbackMode = null;
 
   isPaused = false;
 
@@ -1197,18 +1067,14 @@ function finishAutoPractice() {
 
   statusDisplay.textContent = "";
 
+  pauseButton.disabled = true;
+
   pauseButton.textContent =
     "一時停止";
-
-  pauseButton.disabled = true;
 }
 
 
-/* ==================================================
-   回答音声だけ停止
-================================================== */
-
-function stopAnswerPlaybackOnly() {
+function stopAnswerPlayback() {
 
   clearTimeout(
     repeatTimer
@@ -1218,9 +1084,7 @@ function stopAnswerPlaybackOnly() {
     animationFrameId
   );
 
-
   player.pause();
-
 
   autoRunning = false;
 
@@ -1228,39 +1092,291 @@ function stopAnswerPlaybackOnly() {
 
   inRepeatPause = false;
 
-  playbackMode = null;
-
   segmentEndTime = null;
 
-  remainingRepeatMs = 0;
-
-
-  pauseButton.textContent =
-    "一時停止";
+  statusDisplay.textContent = "";
 
   pauseButton.disabled = true;
 
-  statusDisplay.textContent = "";
+  pauseButton.textContent =
+    "一時停止";
 }
 
 
-/* ==================================================
-   全停止
-================================================== */
+/* =========================
+   録音ON/OFF
+========================= */
 
-function stopEverything() {
+recordToggle.addEventListener(
+  "change",
+  async () => {
 
-  stopAnswerPlaybackOnly();
+    recordingEnabled =
+      recordToggle.checked;
 
-  questionPlayer.pause();
 
-  questionPlayer.currentTime = 0;
+    if (recordingEnabled) {
+
+      await startUserRecording();
+
+    } else {
+
+      stopUserRecording();
+    }
+  }
+);
+
+
+/* =========================
+   録音開始
+========================= */
+
+async function startUserRecording() {
+
+  if (!SpeechRecognition) {
+
+    recordToggle.checked = false;
+
+    recordingEnabled = false;
+
+    recordingStatus.textContent =
+      "このブラウザでは文字起こしを利用できません。";
+
+    return;
+  }
+
+
+  try {
+
+    mediaStream =
+      await navigator.mediaDevices
+        .getUserMedia({
+          audio: true
+        });
+
+
+    mediaRecorder =
+      new MediaRecorder(
+        mediaStream
+      );
+
+
+    audioChunks = [];
+
+
+    mediaRecorder.ondataavailable =
+      event => {
+
+        if (
+          event.data &&
+          event.data.size > 0
+        ) {
+
+          audioChunks.push(
+            event.data
+          );
+        }
+      };
+
+
+    mediaRecorder.start();
+
+
+    startRecognition();
+
+
+    recordingStatus.innerHTML =
+      '<span class="recording">● Recording</span>';
+
+
+    transcriptDisplay.textContent = "";
+
+
+  } catch (error) {
+
+    recordToggle.checked = false;
+
+    recordingEnabled = false;
+
+    recordingStatus.textContent =
+      "マイクを使用できません。";
+  }
 }
 
 
-/* ==================================================
-   MP3を自動解析
-================================================== */
+/* =========================
+   文字起こし
+========================= */
+
+function startRecognition() {
+
+  finalTranscript = "";
+  interimTranscript = "";
+
+
+  recognition =
+    new SpeechRecognition();
+
+
+  recognition.lang =
+    "en-US";
+
+  recognition.continuous =
+    true;
+
+  recognition.interimResults =
+    true;
+
+
+  recognition.onresult =
+    function(event) {
+
+      interimTranscript = "";
+
+
+      for (
+        let i =
+          event.resultIndex;
+        i <
+          event.results.length;
+        i++
+      ) {
+
+        const text =
+          event.results[i][0]
+            .transcript;
+
+
+        if (
+          event.results[i].isFinal
+        ) {
+
+          finalTranscript +=
+            text + " ";
+
+        } else {
+
+          interimTranscript +=
+            text;
+        }
+      }
+
+
+      transcriptDisplay.textContent =
+        (
+          finalTranscript +
+          interimTranscript
+        ).trim();
+    };
+
+
+  recognition.onerror =
+    function(event) {
+
+      console.log(
+        "SpeechRecognition:",
+        event.error
+      );
+    };
+
+
+  recognition.onend =
+    function() {
+
+      recognitionRunning =
+        false;
+
+
+      /*
+      ONのままなら
+      Chrome側で自動終了した場合に再開
+      */
+
+      if (
+        recordingEnabled
+      ) {
+
+        try {
+
+          recognition.start();
+
+          recognitionRunning = true;
+
+        } catch (error) {}
+      }
+    };
+
+
+  try {
+
+    recognition.start();
+
+    recognitionRunning =
+      true;
+
+  } catch (error) {}
+}
+
+
+/* =========================
+   録音停止
+========================= */
+
+function stopUserRecording() {
+
+  recordingEnabled = false;
+
+
+  if (recognition) {
+
+    recognition.onend = null;
+
+
+    try {
+
+      recognition.stop();
+
+    } catch (error) {}
+  }
+
+
+  recognitionRunning = false;
+
+
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !==
+      "inactive"
+  ) {
+
+    try {
+
+      mediaRecorder.stop();
+
+    } catch (error) {}
+  }
+
+
+  if (mediaStream) {
+
+    mediaStream
+      .getTracks()
+      .forEach(
+        track =>
+          track.stop()
+      );
+
+    mediaStream = null;
+  }
+
+
+  recordingStatus.textContent = "";
+}
+
+
+/* =========================
+   MP3自動分割
+========================= */
 
 async function detectSentenceSegments(
   file,
@@ -1269,14 +1385,6 @@ async function detectSentenceSegments(
 
   const response =
     await fetch(file);
-
-
-  if (!response.ok) {
-
-    throw new Error(
-      "Audio fetch failed"
-    );
-  }
 
 
   const arrayBuffer =
@@ -1392,10 +1500,6 @@ async function detectSentenceSegments(
   }
 
 
-  /*
-  無音区間検出
-  */
-
   const silenceRanges = [];
 
   let silenceStart = null;
@@ -1456,39 +1560,6 @@ async function detectSentenceSegments(
   }
 
 
-  if (
-    silenceStart !== null
-  ) {
-
-    const silenceEnd =
-      audioBuffer.duration;
-
-
-    if (
-      silenceEnd -
-      silenceStart >=
-      MIN_SILENCE_SECONDS
-    ) {
-
-      silenceRanges.push({
-        start:
-          silenceStart,
-
-        end:
-          silenceEnd,
-
-        duration:
-          silenceEnd -
-          silenceStart
-      });
-    }
-  }
-
-
-  /*
-  冒頭・末尾を除く
-  */
-
   const internalSilences =
     silenceRanges.filter(
       range =>
@@ -1503,10 +1574,6 @@ async function detectSentenceSegments(
   const requiredBreaks =
     expectedCount - 1;
 
-
-  /*
-  長い無音から必要数選択
-  */
 
   const selected =
     internalSilences
@@ -1534,14 +1601,10 @@ async function detectSentenceSegments(
     await audioContext.close();
 
     throw new Error(
-      "Sentence boundary detection failed"
+      "Sentence split failed"
     );
   }
 
-
-  /*
-  実音声開始位置
-  */
 
   let actualStart = 0;
 
@@ -1572,10 +1635,6 @@ async function detectSentenceSegments(
   }
 
 
-  /*
-  実音声終了位置
-  */
-
   for (
     let i =
       frames.length - 1;
@@ -1601,10 +1660,6 @@ async function detectSentenceSegments(
   }
 
 
-  /*
-  センテンス区間作成
-  */
-
   const result = [];
 
   let sentenceStart =
@@ -1615,38 +1670,28 @@ async function detectSentenceSegments(
     gap => {
 
       result.push({
-
         start:
           sentenceStart,
 
         end:
-          Math.min(
-            actualEnd,
-            gap.start +
-            0.05
-          )
-
+          gap.start +
+          0.05
       });
 
 
       sentenceStart =
-        Math.max(
-          0,
-          gap.end -
-          0.05
-        );
+        gap.end -
+        0.05;
     }
   );
 
 
   result.push({
-
     start:
       sentenceStart,
 
     end:
       actualEnd
-
   });
 
 
