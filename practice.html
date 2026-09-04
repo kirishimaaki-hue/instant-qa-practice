@@ -7,9 +7,7 @@
 <title>Favorites 練習</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -204,17 +202,9 @@ button {
     padding: 22px 16px 50px;
   }
 
-  h1 {
-    font-size: 27px;
-  }
-
-  .question {
-    font-size: 24px;
-  }
-
-  .step-button {
-    font-size: 14px;
-  }
+  h1 { font-size: 27px; }
+  .question { font-size: 24px; }
+  .step-button { font-size: 14px; }
 
   #transcript,
   #hintBox {
@@ -283,13 +273,9 @@ button {
   </div>
 
   <div id="stepDescription"></div>
-
   <div id="hintBox"></div>
-
   <div id="step1Area"></div>
-
   <div id="practiceControls"></div>
-
   <div id="status"></div>
 
   <div id="loading">
@@ -416,9 +402,6 @@ let fullTranscript = "";
 let currentFinal = "";
 let currentInterim = "";
 
-let repeatStartLength = 0;
-let repeatTexts = [];
-
 
 /* 録音 */
 let recordStream = null;
@@ -518,10 +501,11 @@ function renderStep() {
         const listen =
           document.createElement("button");
 
-        listen.className = "button";
+        listen.className =
+          "button";
 
         listen.textContent =
-          "▶ この文を聞く";
+          "▶ リッスン＆リピート";
 
         listen.disabled =
           segments.length === 0;
@@ -533,7 +517,8 @@ function renderStep() {
         const speak =
           document.createElement("button");
 
-        speak.className = "button";
+        speak.className =
+          "button";
 
         speak.textContent =
           "🎤 発話のみ練習";
@@ -766,7 +751,6 @@ function startStep1SpeakOnly(index) {
 
 /* =====================================================
    Step1 / Step5〜7 共通
-   シンプルなRecognition
 ===================================================== */
 
 function startSimpleRecognition(target) {
@@ -872,8 +856,6 @@ function startStep2to4() {
 
   currentSegment = 0;
 
-  repeatTexts = [];
-
   startContinuousRecognition();
 
   setTimeout(() => {
@@ -909,14 +891,6 @@ function playNextStep2to4() {
       statusDisplay.textContent =
         "Repeat";
 
-      /*
-      Repeat開始時点の
-      表示文字数を覚える
-      */
-      repeatStartLength =
-        getContinuousText().length;
-
-
       const target =
         QUESTION.sentences[
           currentSegment
@@ -938,42 +912,24 @@ function playNextStep2to4() {
           if (isLast) {
 
             graceTimer =
-              setTimeout(
-                finishCurrentRepeat,
-                FINAL_SENTENCE_GRACE_MS
-              );
+              setTimeout(() => {
+
+                currentSegment++;
+
+                playNextStep2to4();
+
+              }, FINAL_SENTENCE_GRACE_MS);
 
           } else {
 
-            finishCurrentRepeat();
+            currentSegment++;
+
+            playNextStep2to4();
           }
 
         }, repeatMs);
     }
   );
-}
-
-
-function finishCurrentRepeat() {
-
-  const currentText =
-    getContinuousText();
-
-  /*
-  Repeat開始後に増えた部分だけを
-  判定用として保存。
-  表示には影響しない。
-  */
-  const repeatText =
-    currentText
-      .slice(repeatStartLength)
-      .trim();
-
-  repeatTexts.push(repeatText);
-
-  currentSegment++;
-
-  playNextStep2to4();
 }
 
 
@@ -983,35 +939,25 @@ function finishStep2to4() {
 
   statusDisplay.textContent = "";
 
-  stopContinuousRecognition();
-
-  const spoken =
-    repeatTexts
-      .filter(Boolean)
-      .join(" ");
-
-  const target =
-    QUESTION.sentences.join(" ");
-
   /*
-  Repeat部分が十分取れていれば
-  それを判定。
-  取れていなければ全体文字起こしを使用。
+  Recognitionの最後の結果が確定してから
+  画面に表示された全文を判定する
   */
-  const scoreText =
-    countWords(spoken) >=
-      Math.floor(
-        countWords(target) * 0.6
-      )
-      ? spoken
-      : getContinuousText();
+  stopContinuousRecognition(() => {
 
-  showScore(
-    calculateSimilarity(
-      scoreText,
-      target
-    )
-  );
+    const spoken =
+      getContinuousText();
+
+    const target =
+      QUESTION.sentences.join(" ");
+
+    showScore(
+      calculateSimilarity(
+        spoken,
+        target
+      )
+    );
+  });
 }
 
 
@@ -1111,10 +1057,6 @@ function launchContinuousRecognition() {
       recognition = null;
     }
 
-    /*
-    練習途中でChromeが
-    Recognitionを終了した時だけ再開
-    */
     if (
       continuousRecognition &&
       practiceRunning
@@ -1148,11 +1090,16 @@ function getContinuousText() {
 }
 
 
-function stopContinuousRecognition() {
+function stopContinuousRecognition(callback) {
 
   continuousRecognition = false;
 
   if (!recognition) {
+
+    if (callback) {
+      callback();
+    }
+
     return;
   }
 
@@ -1178,17 +1125,27 @@ function stopContinuousRecognition() {
     if (recognition === r) {
       recognition = null;
     }
+
+    if (callback) {
+      callback();
+    }
   };
 
   try {
+
     r.stop();
-  } catch (e) {}
+
+  } catch (e) {
+
+    if (callback) {
+      callback();
+    }
+  }
 }
 
 
 /* =====================================================
    Step5〜7
-   お手本終了後にRecognition開始
 ===================================================== */
 
 function startStep5to7() {
@@ -1219,8 +1176,7 @@ function startStep5to7() {
       QUESTION.sentences.join(" ");
 
     /*
-    ネイティブ音声終了後に
-    初めてRecognition開始
+    ネイティブ音声が完全に終了してから開始
     */
     startSimpleRecognition(target);
 
@@ -1565,8 +1521,6 @@ function resetTranscript() {
   currentFinal = "";
   currentInterim = "";
 
-  repeatTexts = [];
-
   transcriptDisplay.textContent =
     "リピートした英文がここに表示されます。";
 
@@ -1783,7 +1737,7 @@ function appendWithoutOverlap(
 
 
 /* =====================================================
-   任意録音
+   録音
 ===================================================== */
 
 recordButton.onclick =
@@ -1856,9 +1810,7 @@ recordButton.onclick =
           );
 
         audio.controls = true;
-
-        audio.src =
-          recordedUrl;
+        audio.src = recordedUrl;
 
         recordPlayback.appendChild(
           audio
