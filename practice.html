@@ -162,17 +162,27 @@ button {
 
 #step1Instruction {
   display: none;
+  margin: 0 0 10px;
+  color: #c00000;
+}
+
+.step1-main-line {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  margin: 0 0 10px;
   font-size: 16px;
-  color: #c00000;
 }
 
 #step1Cue {
   font-size: 19px;
   font-weight: bold;
+  color: #c00000;
+}
+
+.cue-note {
+  margin-top: 4px;
+  font-size: 13px;
   color: #c00000;
 }
 
@@ -201,12 +211,16 @@ button {
 
 #repeatInstruction {
   display: none;
+  margin: 0 0 10px;
+  color: #c00000;
+}
+
+.repeat-main-line {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 0 0 10px;
   font-size: 16px;
-  color: #c00000;
 }
 
 #repeatCue {
@@ -363,8 +377,16 @@ button {
   <div id="stepDescription"></div>
 
   <div id="step1Instruction">
-    <span>音声が終わってからリピートしてください。</span>
-    <span id="step1Cue"></span>
+
+    <div class="step1-main-line">
+      <span>音声が終わってからリピートしてください。</span>
+      <span id="step1Cue"></span>
+    </div>
+
+    <div class="cue-note">
+      ※話し終わってから約2秒後に「Repeat」の点滅が消えます。
+    </div>
+
   </div>
 
   <div id="step24Area">
@@ -380,8 +402,16 @@ button {
   </div>
 
   <div id="repeatInstruction">
-    <span>「Repeat」が表示されてから話してください。</span>
-    <span id="repeatCue"></span>
+
+    <div class="repeat-main-line">
+      <span>「Repeat」が表示されてから話してください。</span>
+      <span id="repeatCue"></span>
+    </div>
+
+    <div class="cue-note">
+      ※話し終わってから約2秒後に「Repeat」の点滅が消えます。
+    </div>
+
   </div>
 
   <div id="hintBox"></div>
@@ -424,9 +454,9 @@ const FINAL_SENTENCE_GRACE_MS =
 const AMOUNT_PASS_RATIO =
   0.60;
 
-/* 最後の認識から1.2秒無音なら発話終了と判断 */
+/* 最後の認識から2.5秒無音なら発話終了と判断 */
 const SPEECH_END_SILENCE_MS =
-  1200;
+  2500;
 
 /* 発話終了から0.5秒後にRepeatを消す */
 const CUE_CLEAR_DELAY_MS =
@@ -646,7 +676,7 @@ function renderStep() {
       "1センテンスずつリピート";
 
     step1Instruction.style.display =
-      "flex";
+      "block";
 
     hintBox.style.display =
       "none";
@@ -784,7 +814,7 @@ function renderStep() {
   if (currentStep === 5) {
 
     repeatInstruction.style.display =
-      "flex";
+      "block";
 
     stepDescription.textContent =
       "全文を聞いてから、ヒントを見ながらまとめてリピート";
@@ -803,7 +833,7 @@ function renderStep() {
   if (currentStep === 6) {
 
     repeatInstruction.style.display =
-      "flex";
+      "block";
 
     stepDescription.textContent =
       "全文を聞いてから、ヒントを見ながらまとめてリピート";
@@ -822,7 +852,7 @@ function renderStep() {
   if (currentStep === 7) {
 
     repeatInstruction.style.display =
-      "flex";
+      "block";
 
     stepDescription.textContent =
       "全文を聞いてから、ヒントなしでまとめてリピート";
