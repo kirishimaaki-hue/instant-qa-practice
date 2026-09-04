@@ -287,6 +287,9 @@ const QUESTION = {
 const PASS_SCORE = 90;
 const FINAL_SENTENCE_GRACE_MS = 2000;
 
+/* Step5〜7：全文終了前にRecognitionを開始 */
+const WHOLE_RECOGNITION_LEAD_SECONDS = 0.8;
+
 const MIN_SILENCE_SECONDS = 0.25;
 const SILENCE_THRESHOLD = 0.02;
 
@@ -426,7 +429,7 @@ function renderStep() {
   if (currentStep === 1) {
 
     stepDescription.textContent =
-      "1センテンスずつ、何度でもリピート";
+      "1センテンスずつリピート";
 
     hintBox.style.display = "none";
 
@@ -689,8 +692,7 @@ function startStep1SpeakOnly(index) {
 
 
 /* =====================================================
-   Step1・Step5〜7 共通
-   完全に同じRecognition
+   Step1・Step5〜7 共通Recognition
 ===================================================== */
 
 function startSimpleRecognition(target) {
@@ -756,18 +758,7 @@ function startSimpleRecognition(target) {
 
 /* =====================================================
    Step2〜4
-
-   Recognition開始
-   ↓
-   Sentence1 + Repeat
-   ↓
-   Sentence2 + Repeat
-   ↓
-   Sentence3 + Repeat
-   ↓
-   Recognition停止
-
-   途中では一切 stop / abort / restart しない
+   Recognitionは最初から最後まで1回
 ===================================================== */
 
 function startStep2to4() {
@@ -820,18 +811,11 @@ function startOneContinuousRecognition() {
         event.results
       );
 
-    /*
-    ネイティブ音声を含め、
-    Chromeが認識したものを全部表示
-    */
     transcriptDisplay.textContent =
       recognitionText;
   };
 
 
-  /*
-  自動再起動はしない
-  */
   r.onend = () => {
 
     if (recognition === r) {
@@ -862,10 +846,6 @@ function playNextStep2to4() {
   statusDisplay.textContent =
     `Sentence ${currentSegment + 1}`;
 
-  /*
-  Recognitionには一切触れず
-  音声だけ再生
-  */
   playSegmentCore(
     currentSegment,
     () => {
@@ -923,9 +903,6 @@ function finishStep2to4() {
   const target =
     QUESTION.sentences.join(" ");
 
-  /*
-  最後に1回だけstopする
-  */
   stopRecognitionGracefully(() => {
 
     showScore(
@@ -941,9 +918,7 @@ function finishStep2to4() {
 /* =====================================================
    Step5〜7
 
-   全文再生終了
-   ↓
-   Step1と同じ startSimpleRecognition()
+   全文終了0.8秒前からRecognition開始
 ===================================================== */
 
 function startStep5to7() {
@@ -956,23 +931,75 @@ function startStep5to7() {
   statusDisplay.textContent =
     "Listen";
 
+  const target =
+    QUESTION.sentences.join(" ");
+
+  let recognitionStarted = false;
+
+
+  const startRecognitionNearEnd = () => {
+
+    if (
+      recognitionStarted ||
+      !practiceRunning ||
+      !Number.isFinite(answerPlayer.duration)
+    ) {
+      return;
+    }
+
+    const remaining =
+      answerPlayer.duration -
+      answerPlayer.currentTime;
+
+    if (
+      remaining <=
+      WHOLE_RECOGNITION_LEAD_SECONDS
+    ) {
+
+      recognitionStarted = true;
+
+      startSimpleRecognition(target);
+    }
+  };
+
+
+  answerPlayer.addEventListener(
+    "timeupdate",
+    startRecognitionNearEnd
+  );
+
+
   answerPlayer.currentTime = 0;
+
 
   answerPlayer.onended = () => {
 
     answerPlayer.onended = null;
 
+    answerPlayer.removeEventListener(
+      "timeupdate",
+      startRecognitionNearEnd
+    );
+
     if (!practiceRunning) {
       return;
     }
 
+    /*
+    timeupdateの間隔の関係で
+    0.8秒前に開始できなかった場合の保険
+    */
+    if (!recognitionStarted) {
+
+      recognitionStarted = true;
+
+      startSimpleRecognition(target);
+    }
+
     statusDisplay.textContent =
       "Repeat";
-
-    startSimpleRecognition(
-      QUESTION.sentences.join(" ")
-    );
   };
+
 
   answerPlayer.play();
 }
@@ -1077,10 +1104,6 @@ function stopRecognitionGracefully(callback) {
 
 function playSegment(index, callback) {
 
-  /*
-  Step1だけは、
-  お手本の前に前回Recognitionを停止
-  */
   stopRecognition();
 
   playSegmentCore(
@@ -1332,12 +1355,6 @@ function showScore(score) {
   }
 }
 
-
-/*
-Step2〜4ではネイティブ音声が
-混ざる場合があるため、
-全文の中で正解英文に最も近い部分を採点。
-*/
 
 function calculateBestSimilarity(
   spoken,
