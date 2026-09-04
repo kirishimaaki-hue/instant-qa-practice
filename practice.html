@@ -242,7 +242,7 @@ button {
 
 
 /* =========================
-   Repeat点滅
+   点滅
 ========================= */
 
 .blink {
@@ -307,7 +307,6 @@ button {
 }
 
 @media (max-width: 600px) {
-
   .app {
     padding: 22px 16px 50px;
   }
@@ -328,13 +327,10 @@ button {
   #hintBox {
     font-size: 18px;
   }
-
-  .transcript-header {
-    align-items: center;
-  }
 }
 </style>
 </head>
+
 
 <body>
 
@@ -389,6 +385,7 @@ button {
   <div class="step-title">
     練習ステップ
   </div>
+
 
   <div class="step-tabs">
 
@@ -506,6 +503,11 @@ const FINAL_SENTENCE_GRACE_MS =
 const AMOUNT_PASS_RATIO =
   0.60;
 
+/* 最後の認識から2.5秒無音なら発話終了と判断 */
+const SPEECH_END_SILENCE_MS =
+  2500;
+
+/* 発話終了から2秒後にRepeatを消す */
 const CUE_CLEAR_DELAY_MS =
   2000;
 
@@ -665,6 +667,8 @@ let recognitionText = "";
 
 let step24PassedCount = 0;
 
+let speechEndTimer = null;
+
 let cueClearTimer = null;
 
 
@@ -691,7 +695,7 @@ prepareSegments();
 
 
 /* =========================
-   Cue表示
+   Cue
 ========================= */
 
 function setCue(
@@ -710,26 +714,16 @@ function setCue(
 }
 
 
-function stopCueBlink(
+function finishCue(
   element
 ) {
 
   element.classList.remove(
     "blink"
   );
-}
-
-
-function clearCueAfterDelay(
-  element
-) {
 
   clearTimeout(
     cueClearTimer
-  );
-
-  stopCueBlink(
-    element
   );
 
   cueClearTimer =
@@ -1161,7 +1155,6 @@ function createPracticeButtons(
   speak.onclick =
     startSpeakOnlyWhole;
 
-
   practiceControls.appendChild(
     speak
   );
@@ -1190,7 +1183,6 @@ function createPracticeButtons(
         pause
       );
 
-
   practiceControls.appendChild(
     pause
   );
@@ -1208,10 +1200,6 @@ function playStep1(
   stopAllPractice();
 
   resetTranscript();
-
-  clearTimeout(
-    cueClearTimer
-  );
 
   setCue(
     step1Cue,
@@ -1233,12 +1221,7 @@ function playStep1(
 
       startSimpleRecognition(
         QUESTION.sentences[index],
-        () => {
-
-          clearCueAfterDelay(
-            step1Cue
-          );
-        }
+        step1Cue
       );
     }
   );
@@ -1257,18 +1240,22 @@ function startStep1SpeakOnly(
     "";
 
   startSimpleRecognition(
-    QUESTION.sentences[index]
+    QUESTION.sentences[index],
+    null
   );
 }
 
 
 /* =========================
    Step1 Recognition
+
+   発話中は文字起こしだけ。
+   採点は終了後に1回だけ。
 ========================= */
 
 function startSimpleRecognition(
   target,
-  onFinished = null
+  cueElement
 ) {
 
   stopRecognition();
@@ -1304,16 +1291,51 @@ function startSimpleRecognition(
     true;
 
 
-  r.onresult =
-    event => {
+  let hasSpeech =
+    false;
 
-      recognitionText =
-        buildRecognitionText(
-          event.results
-        );
+  let finished =
+    false;
 
-      transcriptDisplay.textContent =
-        recognitionText;
+
+  const finish =
+    () => {
+
+      if (
+        finished ||
+        !hasSpeech
+      ) {
+
+        return;
+      }
+
+
+      finished =
+        true;
+
+
+      clearTimeout(
+        speechEndTimer
+      );
+
+
+      r.onend =
+        null;
+
+
+      if (
+        recognition === r
+      ) {
+
+        try {
+
+          r.stop();
+
+        } catch (e) {}
+
+        recognition =
+          null;
+      }
 
 
       if (
@@ -1326,6 +1348,51 @@ function startSimpleRecognition(
             target
           )
         );
+      }
+
+
+      if (
+        cueElement
+      ) {
+
+        finishCue(
+          cueElement
+        );
+      }
+    };
+
+
+  r.onresult =
+    event => {
+
+      recognitionText =
+        buildRecognitionText(
+          event.results
+        );
+
+
+      transcriptDisplay.textContent =
+        recognitionText;
+
+
+      if (
+        recognitionText
+      ) {
+
+        hasSpeech =
+          true;
+
+
+        clearTimeout(
+          speechEndTimer
+        );
+
+
+        speechEndTimer =
+          setTimeout(
+            finish,
+            SPEECH_END_SILENCE_MS
+          );
       }
     };
 
@@ -1343,10 +1410,10 @@ function startSimpleRecognition(
 
 
       if (
-        onFinished
+        hasSpeech
       ) {
 
-        onFinished();
+        finish();
       }
     };
 
@@ -1361,6 +1428,7 @@ function startSimpleRecognition(
 
 /* =========================
    Step2〜4
+   現状維持
 ========================= */
 
 function startStep2to4() {
@@ -1378,10 +1446,6 @@ function startStep2to4() {
 
   step24Result.textContent =
     "";
-
-  clearTimeout(
-    cueClearTimer
-  );
 
   playNextStep2to4();
 }
@@ -1457,10 +1521,6 @@ function playNextStep2to4() {
   );
 }
 
-
-/* Step2〜4
-   文字起こしは表示せず、
-   認識された単語数のみ使用 */
 
 function startAmountRecognition(
   targetSentence,
@@ -1574,14 +1634,13 @@ function startAmountRecognition(
 
         } catch (e) {}
 
-
         recognition =
           null;
       }
 
 
-      stopCueBlink(
-        step24Cue
+      step24Cue.classList.remove(
+        "blink"
       );
 
 
@@ -1682,8 +1741,8 @@ function finishStep2to4() {
     false;
 
 
-  stopCueBlink(
-    step24Cue
+  step24Cue.classList.remove(
+    "blink"
   );
 
 
@@ -1720,7 +1779,7 @@ function finishStep2to4() {
   }
 
 
-  clearCueAfterDelay(
+  finishCue(
     step24Cue
   );
 }
@@ -1753,7 +1812,16 @@ function countRecognizedWords(
 
 /* =========================
    Step5〜7
-   現在成功している方式を維持
+
+   お手本終了
+   ↓
+   Recognition開始
+   ↓
+   onstart
+   ↓
+   Repeat表示
+
+   この順序は成功版と同じ
 ========================= */
 
 function startStep5to7() {
@@ -1804,8 +1872,9 @@ function startStep5to7() {
 }
 
 
-/* Recognitionが実際に開始してから
-   Repeatを表示 */
+/* =========================
+   Step5〜7 Recognition
+========================= */
 
 function startWholeRecognitionWhenReady(
   target
@@ -1844,6 +1913,72 @@ function startWholeRecognitionWhenReady(
     true;
 
 
+  let hasSpeech =
+    false;
+
+  let finished =
+    false;
+
+
+  const finish =
+    () => {
+
+      if (
+        finished ||
+        !hasSpeech
+      ) {
+
+        return;
+      }
+
+
+      finished =
+        true;
+
+
+      clearTimeout(
+        speechEndTimer
+      );
+
+
+      r.onend =
+        null;
+
+
+      if (
+        recognition === r
+      ) {
+
+        try {
+
+          r.stop();
+
+        } catch (e) {}
+
+        recognition =
+          null;
+      }
+
+
+      if (
+        recognitionText
+      ) {
+
+        showScore(
+          calculateSimilarity(
+            recognitionText,
+            target
+          )
+        );
+      }
+
+
+      finishCue(
+        repeatCue
+      );
+    };
+
+
   r.onstart =
     () => {
 
@@ -1869,6 +2004,7 @@ function startWholeRecognitionWhenReady(
           event.results
         );
 
+
       transcriptDisplay.textContent =
         recognitionText;
 
@@ -1877,12 +2013,20 @@ function startWholeRecognitionWhenReady(
         recognitionText
       ) {
 
-        showScore(
-          calculateSimilarity(
-            recognitionText,
-            target
-          )
+        hasSpeech =
+          true;
+
+
+        clearTimeout(
+          speechEndTimer
         );
+
+
+        speechEndTimer =
+          setTimeout(
+            finish,
+            SPEECH_END_SILENCE_MS
+          );
       }
     };
 
@@ -1899,9 +2043,12 @@ function startWholeRecognitionWhenReady(
       }
 
 
-      clearCueAfterDelay(
-        repeatCue
-      );
+      if (
+        hasSpeech
+      ) {
+
+        finish();
+      }
     };
 
 
@@ -1923,10 +2070,12 @@ function startSpeakOnlyWhole() {
 
   resetTranscript();
 
+
   startSimpleRecognition(
     QUESTION.sentences.join(
       " "
-    )
+    ),
+    null
   );
 }
 
@@ -1970,6 +2119,11 @@ function buildRecognitionText(
 ========================= */
 
 function stopRecognition() {
+
+  clearTimeout(
+    speechEndTimer
+  );
+
 
   if (
     !recognition
@@ -2270,6 +2424,10 @@ function stopAllPractice() {
 
 
   clearTimeout(
+    speechEndTimer
+  );
+
+  clearTimeout(
     cueClearTimer
   );
 
@@ -2339,7 +2497,7 @@ function resetTranscript() {
 
 
 /* =========================
-   Step1・Step5〜7 判定
+   Step1・Step5〜7 採点
 ========================= */
 
 function showScore(
