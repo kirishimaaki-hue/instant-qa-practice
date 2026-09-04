@@ -26,8 +26,15 @@ body {
 }
 
 h1 {
-  margin: 0 0 30px;
+  margin: 0 0 10px;
   font-size: 32px;
+}
+
+#practiceGuide {
+  margin: 0 0 26px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #555;
 }
 
 .question {
@@ -316,6 +323,10 @@ button {
 
   <h1>Favorites 練習</h1>
 
+  <div id="practiceGuide">
+    リピート音声の正確さを点数で判定します。90点以上で合格です。なるべく合格点が出てから次のステップへ進みましょう。
+  </div>
+
   <div class="question">
     Q1. What's your favorite season?
   </div>
@@ -454,11 +465,9 @@ const FINAL_SENTENCE_GRACE_MS =
 const AMOUNT_PASS_RATIO =
   0.60;
 
-/* 最後の認識から2.5秒無音なら発話終了と判断 */
 const SPEECH_END_SILENCE_MS =
   2500;
 
-/* 発話終了から0.5秒後にRepeatを消す */
 const CUE_CLEAR_DELAY_MS =
   500;
 
@@ -470,6 +479,9 @@ const SILENCE_THRESHOLD =
 
 
 /* DOM */
+
+const practiceGuide =
+  document.getElementById("practiceGuide");
 
 const questionAudioButton =
   document.getElementById("questionAudioButton");
@@ -649,6 +661,18 @@ stepButtons.forEach(button => {
 /* Step表示 */
 
 function renderStep() {
+
+  if (currentStep === 7) {
+
+    practiceGuide.textContent =
+      "リピート音声の正確さを点数で判定します。90点以上で合格です。このステップで合格点が出たら、リピート練習は終了です。";
+
+  } else {
+
+    practiceGuide.textContent =
+      "リピート音声の正確さを点数で判定します。90点以上で合格です。なるべく合格点が出てから次のステップへ進みましょう。";
+  }
+
 
   step1Area.innerHTML = "";
   practiceControls.innerHTML = "";
@@ -1608,8 +1632,7 @@ function startWholeRecognitionWhenReady(
       if (
         recognition === r
       ) {
-        recognition =
-          null;
+        recognition = null;
       }
 
       if (
