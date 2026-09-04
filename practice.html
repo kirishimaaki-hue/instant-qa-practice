@@ -151,7 +151,16 @@ button {
   min-height: 24px;
   margin-bottom: 12px;
   font-size: 16px;
-  color: #555;
+  color: #c00000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#repeatCue {
+  font-size: 22px;
+  font-weight: bold;
+  color: #c00000;
 }
 
 #hintBox {
@@ -187,8 +196,8 @@ button {
 }
 
 #status {
-  min-height: 38px;
-  margin: 16px 0 4px;
+  min-height: 0;
+  margin: 0;
   font-size: 24px;
   font-weight: bold;
 }
@@ -264,7 +273,12 @@ button {
   </div>
 
   <div id="stepDescription"></div>
-  <div id="repeatInstruction"></div>
+
+  <div id="repeatInstruction">
+    <span id="repeatInstructionText"></span>
+    <span id="repeatCue"></span>
+  </div>
+
   <div id="hintBox"></div>
   <div id="step1Area"></div>
   <div id="practiceControls"></div>
@@ -325,8 +339,11 @@ const judgmentDisplay =
 const stepDescription =
   document.getElementById("stepDescription");
 
-const repeatInstruction =
-  document.getElementById("repeatInstruction");
+const repeatInstructionText =
+  document.getElementById("repeatInstructionText");
+
+const repeatCue =
+  document.getElementById("repeatCue");
 
 const hintBox =
   document.getElementById("hintBox");
@@ -432,7 +449,8 @@ function renderStep() {
   step1Area.innerHTML = "";
   practiceControls.innerHTML = "";
   hintBox.innerHTML = "";
-  repeatInstruction.textContent = "";
+  repeatInstructionText.textContent = "";
+  repeatCue.textContent = "";
   statusDisplay.textContent = "";
 
   if (currentStep === 1) {
@@ -553,7 +571,7 @@ function renderStep() {
     stepDescription.textContent =
       "全文を聞いてから、ヒントを見ながらまとめてリピート";
 
-    repeatInstruction.textContent =
+    repeatInstructionText.textContent =
       "「Repeat」が表示されてから話してください。";
 
     hintBox.textContent =
@@ -572,7 +590,7 @@ function renderStep() {
     stepDescription.textContent =
       "全文を聞いてから、ヒントを見ながらまとめてリピート";
 
-    repeatInstruction.textContent =
+    repeatInstructionText.textContent =
       "「Repeat」が表示されてから話してください。";
 
     hintBox.textContent =
@@ -591,7 +609,7 @@ function renderStep() {
     stepDescription.textContent =
       "全文を聞いてから、ヒントなしでまとめてリピート";
 
-    repeatInstruction.textContent =
+    repeatInstructionText.textContent =
       "「Repeat」が表示されてから話してください。";
 
     hintBox.innerHTML =
@@ -776,7 +794,6 @@ function startSimpleRecognition(target) {
 
 /* =====================================================
    Step2〜4
-   この部分は変更しない
 ===================================================== */
 
 function startStep2to4() {
@@ -935,14 +952,6 @@ function finishStep2to4() {
 
 /* =====================================================
    Step5〜7
-
-   お手本終了
-   ↓
-   Recognition開始
-   ↓
-   Chromeのonstart
-   ↓
-   Repeat表示
 ===================================================== */
 
 function startStep5to7() {
@@ -952,8 +961,7 @@ function startStep5to7() {
 
   practiceRunning = true;
 
-  statusDisplay.textContent =
-    "Listen";
+  repeatCue.textContent = "";
 
   answerPlayer.currentTime = 0;
 
@@ -974,8 +982,8 @@ function startStep5to7() {
 }
 
 
-/* Step5〜7専用
-   実際にRecognitionが開始してからRepeat表示 */
+/* Step5〜7
+   Recognitionが実際に開始してからRepeat表示 */
 
 function startWholeRecognitionWhenReady(target) {
 
@@ -1007,7 +1015,7 @@ function startWholeRecognitionWhenReady(target) {
       practiceRunning
     ) {
 
-      statusDisplay.textContent =
+      repeatCue.textContent =
         "Repeat";
     }
   };
@@ -1041,7 +1049,7 @@ function startWholeRecognitionWhenReady(target) {
       recognition = null;
     }
 
-    statusDisplay.textContent = "";
+    repeatCue.textContent = "";
   };
 
 
@@ -1361,6 +1369,7 @@ function stopAllPractice() {
   disablePauseButton();
 
   statusDisplay.textContent = "";
+  repeatCue.textContent = "";
 }
 
 
