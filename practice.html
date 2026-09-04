@@ -142,9 +142,16 @@ button {
 }
 
 #stepDescription {
-  margin-bottom: 18px;
+  margin-bottom: 8px;
   font-size: 18px;
   font-weight: bold;
+}
+
+#repeatInstruction {
+  min-height: 24px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #555;
 }
 
 #hintBox {
@@ -257,6 +264,7 @@ button {
   </div>
 
   <div id="stepDescription"></div>
+  <div id="repeatInstruction"></div>
   <div id="hintBox"></div>
   <div id="step1Area"></div>
   <div id="practiceControls"></div>
@@ -287,9 +295,6 @@ const QUESTION = {
 const PASS_SCORE = 90;
 const FINAL_SENTENCE_GRACE_MS = 2000;
 
-/* Step5〜7：全文終了前にRecognitionを開始 */
-const WHOLE_RECOGNITION_LEAD_SECONDS = 0.8;
-
 const MIN_SILENCE_SECONDS = 0.25;
 const SILENCE_THRESHOLD = 0.02;
 
@@ -319,6 +324,9 @@ const judgmentDisplay =
 
 const stepDescription =
   document.getElementById("stepDescription");
+
+const repeatInstruction =
+  document.getElementById("repeatInstruction");
 
 const hintBox =
   document.getElementById("hintBox");
@@ -424,6 +432,7 @@ function renderStep() {
   step1Area.innerHTML = "";
   practiceControls.innerHTML = "";
   hintBox.innerHTML = "";
+  repeatInstruction.textContent = "";
   statusDisplay.textContent = "";
 
   if (currentStep === 1) {
@@ -544,6 +553,9 @@ function renderStep() {
     stepDescription.textContent =
       "全文を聞いてから、ヒントを見ながらまとめてリピート";
 
+    repeatInstruction.textContent =
+      "「Repeat」が表示されてから話してください。";
+
     hintBox.textContent =
       QUESTION.hintMany;
 
@@ -560,6 +572,9 @@ function renderStep() {
     stepDescription.textContent =
       "全文を聞いてから、ヒントを見ながらまとめてリピート";
 
+    repeatInstruction.textContent =
+      "「Repeat」が表示されてから話してください。";
+
     hintBox.textContent =
       QUESTION.hintFew;
 
@@ -575,6 +590,9 @@ function renderStep() {
 
     stepDescription.textContent =
       "全文を聞いてから、ヒントなしでまとめてリピート";
+
+    repeatInstruction.textContent =
+      "「Repeat」が表示されてから話してください。";
 
     hintBox.innerHTML =
       '<div class="no-hint">ヒントなし</div>';
@@ -692,7 +710,7 @@ function startStep1SpeakOnly(index) {
 
 
 /* =====================================================
-   Step1・Step5〜7 共通Recognition
+   Step1用Recognition
 ===================================================== */
 
 function startSimpleRecognition(target) {
@@ -758,7 +776,7 @@ function startSimpleRecognition(target) {
 
 /* =====================================================
    Step2〜4
-   Recognitionは最初から最後まで1回
+   この部分は変更しない
 ===================================================== */
 
 function startStep2to4() {
@@ -918,7 +936,13 @@ function finishStep2to4() {
 /* =====================================================
    Step5〜7
 
-   全文終了0.8秒前からRecognition開始
+   お手本終了
+   ↓
+   Recognition開始
+   ↓
+   Chromeのonstart
+   ↓
+   Repeat表示
 ===================================================== */
 
 function startStep5to7() {
@@ -931,77 +955,99 @@ function startStep5to7() {
   statusDisplay.textContent =
     "Listen";
 
-  const target =
-    QUESTION.sentences.join(" ");
-
-  let recognitionStarted = false;
-
-
-  const startRecognitionNearEnd = () => {
-
-    if (
-      recognitionStarted ||
-      !practiceRunning ||
-      !Number.isFinite(answerPlayer.duration)
-    ) {
-      return;
-    }
-
-    const remaining =
-      answerPlayer.duration -
-      answerPlayer.currentTime;
-
-    if (
-      remaining <=
-      WHOLE_RECOGNITION_LEAD_SECONDS
-    ) {
-
-      recognitionStarted = true;
-
-      startSimpleRecognition(target);
-    }
-  };
-
-
-  answerPlayer.addEventListener(
-    "timeupdate",
-    startRecognitionNearEnd
-  );
-
-
   answerPlayer.currentTime = 0;
-
 
   answerPlayer.onended = () => {
 
     answerPlayer.onended = null;
 
-    answerPlayer.removeEventListener(
-      "timeupdate",
-      startRecognitionNearEnd
-    );
-
     if (!practiceRunning) {
       return;
     }
 
-    /*
-    timeupdateの間隔の関係で
-    0.8秒前に開始できなかった場合の保険
-    */
-    if (!recognitionStarted) {
+    startWholeRecognitionWhenReady(
+      QUESTION.sentences.join(" ")
+    );
+  };
 
-      recognitionStarted = true;
+  answerPlayer.play();
+}
 
-      startSimpleRecognition(target);
+
+/* Step5〜7専用
+   実際にRecognitionが開始してからRepeat表示 */
+
+function startWholeRecognitionWhenReady(target) {
+
+  stopRecognition();
+
+  if (!SpeechRecognition) {
+
+    transcriptDisplay.textContent =
+      "このブラウザでは文字起こしを利用できません。";
+
+    return;
+  }
+
+  const r =
+    new SpeechRecognition();
+
+  recognition = r;
+  recognitionText = "";
+
+  r.lang = "en-US";
+  r.continuous = true;
+  r.interimResults = true;
+
+
+  r.onstart = () => {
+
+    if (
+      recognition === r &&
+      practiceRunning
+    ) {
+
+      statusDisplay.textContent =
+        "Repeat";
     }
-
-    statusDisplay.textContent =
-      "Repeat";
   };
 
 
-  answerPlayer.play();
+  r.onresult = event => {
+
+    recognitionText =
+      buildRecognitionText(
+        event.results
+      );
+
+    transcriptDisplay.textContent =
+      recognitionText;
+
+    if (recognitionText) {
+
+      showScore(
+        calculateSimilarity(
+          recognitionText,
+          target
+        )
+      );
+    }
+  };
+
+
+  r.onend = () => {
+
+    if (recognition === r) {
+      recognition = null;
+    }
+
+    statusDisplay.textContent = "";
+  };
+
+
+  try {
+    r.start();
+  } catch (e) {}
 }
 
 
