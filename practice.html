@@ -9,41 +9,25 @@
 @media(max-width:700px){.app{padding:20px 14px 45px}h1{font-size:26px}#practiceGuide{margin-bottom:16px;font-size:14px}.selector-panel{grid-template-columns:1fr;gap:9px;padding:12px}.question{font-size:22px}.button{width:100%;min-height:44px;margin:4px 0;font-size:16px}.step-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.step-button{width:100%;padding:10px 6px;font-size:14px}#transcriptSection{margin:9px 0 4px}#transcript{min-height:62px;padding:11px;font-size:17px}#judgment{font-size:18px}#hintBox{padding:15px;font-size:18px}.sentence-text{font-size:18px}.sentence-card{padding:14px}#stepDescription{font-size:17px}.cue-note{font-size:12px}}
 </style>
 </head>
-
 <body>
 <div class="app">
-
 <h1 id="appTitle">英語リピート練習</h1>
-
-<div id="practiceGuide">
-リピート音声の正確さを点数で判定します。80点以上で合格です。なるべく合格点が出てから次のステップへ進みましょう。
-</div>
+<div id="practiceGuide">リピート音声の正確さを点数で判定します。80点以上で合格です。なるべく合格点が出てから次のステップへ進みましょう。</div>
 
 <div class="selector-panel">
-  <div>
-    <label for="topicSelect">Topic</label>
-    <select id="topicSelect"></select>
-  </div>
-
-  <div>
-    <label for="questionSelect">問題</label>
-    <select id="questionSelect"></select>
-  </div>
+  <div><label for="topicSelect">Topic</label><select id="topicSelect"></select></div>
+  <div><label for="questionSelect">問題</label><select id="questionSelect"></select></div>
 </div>
 
 <div id="dataError"></div>
 
-<div class="question" id="questionDisplay">
-データを読み込んでいます...
-</div>
+<div class="question" id="questionDisplay">データを読み込んでいます...</div>
 
-<button id="questionAudioButton" class="button" disabled>
-▶ 質問を聞く
-</button>
+<button id="questionAudioButton" class="button" disabled>▶ 質問を聞く</button>
 
 <div class="voice-row">
-  <label for="voiceSelect">英語音声</label>
-  <select id="voiceSelect"></select>
+<label for="voiceSelect">英語音声</label>
+<select id="voiceSelect"></select>
 </div>
 
 <div class="record-controls">
@@ -70,10 +54,7 @@
     <div class="transcript-title">文字起こし</div>
     <div id="judgment"></div>
   </div>
-
-  <div id="transcript">
-    リピートした英文がここに表示されます。
-  </div>
+  <div id="transcript">リピートした英文がここに表示されます。</div>
 </div>
 
 <div id="stepDescription"></div>
@@ -83,19 +64,12 @@
     <span>音声が終わってからリピートしてください。</span>
     <span id="step1Cue"></span>
   </div>
-
-  <div class="cue-note">
-    ※「Repeat」が表示されてから話してください。
-  </div>
+  <div class="cue-note">※「Repeat」が表示されてから話してください。</div>
 </div>
 
 <div id="step24Area">
   <div id="step24Cue"></div>
-
-  <div id="step24Notice">
-    音声を聞いた後、1センテンスずつリピートしてください。
-  </div>
-
+  <div id="step24Notice">音声を聞いた後、1センテンスずつリピートしてください。</div>
   <div id="step24Result"></div>
 </div>
 
@@ -104,11 +78,7 @@
     <span>「Repeat」が表示されてから話してください。</span>
     <span id="repeatCue"></span>
   </div>
-
-  <div class="cue-note">
-    ※Androidでは3センテンスの文字起こし・点数判定は行いません。
-  </div>
-
+  <div class="cue-note">※Androidでは3センテンスの文字起こし・点数判定は行いません。</div>
   <div id="wholePracticeResultTop" class="whole-practice-result"></div>
 </div>
 
@@ -125,25 +95,24 @@
 <div id="wholePracticeResult" class="whole-practice-result"></div>
 
 <div id="loading"></div>
-
 </div>
 
 <script>
-
-const API_URL=
-"https://script.google.com/macros/s/AKfycbzZIqSI_QMpzyUICUGRGOPup7QL1YJ4thZ5PttFfGxiR8z0IaPZRqSQXj9K2EYA2FgO/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbzZIqSI_QMpzyUICUGRGOPup7QL1YJ4thZ5PttFfGxiR8z0IaPZRqSQXj9K2EYA2FgO/exec";
 
 const PASS_SCORE=80;
+
+/* これ未満は採点せず、音声認識が不安定だった扱いにする */
+const MIN_SCORABLE_SCORE=75;
+
 const SPEECH_END_SILENCE_MS=2500;
 const CUE_CLEAR_DELAY_MS=500;
 const MOBILE_BREAKPOINT=700;
-
 const ANDROID_REPEAT_DELAY_MS=650;
 const ANDROID_WHOLE_SILENCE_MS=1800;
 const ANDROID_MIN_SPEECH_MS=2500;
 
-const IS_ANDROID=
-/Android/i.test(navigator.userAgent);
+const IS_ANDROID=/Android/i.test(navigator.userAgent);
 
 const IS_IOS=
 /iPhone|iPad|iPod/i.test(navigator.userAgent)||
@@ -151,9 +120,6 @@ const IS_IOS=
   navigator.platform==="MacIntel"&&
   navigator.maxTouchPoints>1
 );
-
-const USE_SINGLE_SENTENCE_RECOGNITION=
-IS_ANDROID||IS_IOS;
 
 let QUESTION={
   question:"",
@@ -191,6 +157,7 @@ let wholeCheckAnalyser=null;
 let wholeCheckRaf=null;
 
 let iosPrewarmStream=null;
+let desktopPrewarmStream=null;
 
 const SpeechRecognition=
 window.SpeechRecognition||
@@ -199,115 +166,48 @@ window.webkitSpeechRecognition;
 const synth=
 window.speechSynthesis;
 
-const appTitle=
-document.getElementById("appTitle");
-
-const practiceGuide=
-document.getElementById("practiceGuide");
-
-const topicSelect=
-document.getElementById("topicSelect");
-
-const questionSelect=
-document.getElementById("questionSelect");
-
-const questionDisplay=
-document.getElementById("questionDisplay");
-
-const questionAudioButton=
-document.getElementById("questionAudioButton");
-
-const voiceSelect=
-document.getElementById("voiceSelect");
-
-const recordButton=
-document.getElementById("recordButton");
-
-const stopRecordButton=
-document.getElementById("stopRecordButton");
-
-const recordStatus=
-document.getElementById("recordStatus");
-
-const recordPlayback=
-document.getElementById("recordPlayback");
-
-const transcriptHome=
-document.getElementById("transcriptHome");
-
-const transcriptSection=
-document.getElementById("transcriptSection");
-
-const transcriptDisplay=
-document.getElementById("transcript");
-
-const judgmentDisplay=
-document.getElementById("judgment");
-
-const stepDescription=
-document.getElementById("stepDescription");
-
-const step1Instruction=
-document.getElementById("step1Instruction");
-
-const step1Cue=
-document.getElementById("step1Cue");
-
-const step24Area=
-document.getElementById("step24Area");
-
-const step24Cue=
-document.getElementById("step24Cue");
-
-const step24Result=
-document.getElementById("step24Result");
-
-const repeatInstruction=
-document.getElementById("repeatInstruction");
-
-const repeatCue=
-document.getElementById("repeatCue");
-
-const hintBox=
-document.getElementById("hintBox");
-
-const step1SummaryTop=
-document.getElementById("step1SummaryTop");
-
-const step1SummaryBottom=
-document.getElementById("step1SummaryBottom");
-
-const step1Area=
-document.getElementById("step1Area");
-
-const practiceControls=
-document.getElementById("practiceControls");
-
-const wholePracticeResultTop=
-document.getElementById("wholePracticeResultTop");
-
-const wholePracticeResult=
-document.getElementById("wholePracticeResult");
-
-const loadingDisplay=
-document.getElementById("loading");
-
-const dataError=
-document.getElementById("dataError");
-
-const stepButtons=
-document.querySelectorAll(".step-button");
+const appTitle=document.getElementById("appTitle");
+const practiceGuide=document.getElementById("practiceGuide");
+const topicSelect=document.getElementById("topicSelect");
+const questionSelect=document.getElementById("questionSelect");
+const questionDisplay=document.getElementById("questionDisplay");
+const questionAudioButton=document.getElementById("questionAudioButton");
+const voiceSelect=document.getElementById("voiceSelect");
+const recordButton=document.getElementById("recordButton");
+const stopRecordButton=document.getElementById("stopRecordButton");
+const recordStatus=document.getElementById("recordStatus");
+const recordPlayback=document.getElementById("recordPlayback");
+const transcriptHome=document.getElementById("transcriptHome");
+const transcriptSection=document.getElementById("transcriptSection");
+const transcriptDisplay=document.getElementById("transcript");
+const judgmentDisplay=document.getElementById("judgment");
+const stepDescription=document.getElementById("stepDescription");
+const step1Instruction=document.getElementById("step1Instruction");
+const step1Cue=document.getElementById("step1Cue");
+const step24Area=document.getElementById("step24Area");
+const step24Cue=document.getElementById("step24Cue");
+const step24Result=document.getElementById("step24Result");
+const repeatInstruction=document.getElementById("repeatInstruction");
+const repeatCue=document.getElementById("repeatCue");
+const hintBox=document.getElementById("hintBox");
+const step1SummaryTop=document.getElementById("step1SummaryTop");
+const step1SummaryBottom=document.getElementById("step1SummaryBottom");
+const step1Area=document.getElementById("step1Area");
+const practiceControls=document.getElementById("practiceControls");
+const wholePracticeResultTop=document.getElementById("wholePracticeResultTop");
+const wholePracticeResult=document.getElementById("wholePracticeResult");
+const loadingDisplay=document.getElementById("loading");
+const dataError=document.getElementById("dataError");
+const stepButtons=document.querySelectorAll(".step-button");
 
 init();
 
 async function init(){
-
   await loadVoices();
   await loadStudentFromUrl();
 }
 
 async function fetchJson(url){
-
   const response=
   await fetch(
     url,
@@ -315,7 +215,6 @@ async function fetchJson(url){
   );
 
   if(!response.ok){
-
     throw new Error(
       "データ取得に失敗しました。"
     );
@@ -381,7 +280,6 @@ async function loadStudentRecords(
       !result.success||
       !Array.isArray(result.data)
     ){
-
       throw new Error(
         "問題データを取得できませんでした。"
       );
@@ -397,8 +295,7 @@ async function loadStudentRecords(
       ...new Set(
         studentRecords
         .map(
-          record=>
-          record.topic
+          record=>record.topic
         )
         .filter(Boolean)
       )
@@ -439,7 +336,6 @@ async function loadStudentRecords(
           requestedTopic
         )
       ){
-
         topicSelect.value=
         requestedTopic;
       }
@@ -471,8 +367,7 @@ function populateQuestionSelect(
   const records=
   studentRecords
   .filter(
-    record=>
-    record.topic===topic
+    record=>record.topic===topic
   )
   .sort(
     (a,b)=>
@@ -517,7 +412,6 @@ function populateQuestionSelect(
         option.value===requestedNo
       )
     ){
-
       questionSelect.value=
       requestedNo;
     }
@@ -582,11 +476,8 @@ function applySelectedQuestion(){
   questionAudioButton.disabled=
   false;
 
-  currentStep=
-  1;
-
-  currentActiveSentenceIndex=
-  null;
+  currentStep=1;
+  currentActiveSentenceIndex=null;
 
   stepButtons.forEach(
     button=>{
@@ -612,8 +503,7 @@ function splitIntoSentences(text){
     )||[]
   )
   .map(
-    sentence=>
-    sentence.trim()
+    sentence=>sentence.trim()
   )
   .filter(Boolean);
 }
@@ -662,27 +552,17 @@ function updateUrl(){
 }
 
 function setLoading(text){
-
-  loadingDisplay.textContent=
-  text;
+  loadingDisplay.textContent=text;
 }
 
 function showError(text){
-
-  dataError.style.display=
-  "block";
-
-  dataError.textContent=
-  text;
+  dataError.style.display="block";
+  dataError.textContent=text;
 }
 
 function hideError(){
-
-  dataError.style.display=
-  "none";
-
-  dataError.textContent=
-  "";
+  dataError.style.display="none";
+  dataError.textContent="";
 }
 
 async function loadVoices(){
@@ -704,7 +584,6 @@ async function loadVoices(){
         const finish=()=>{
 
           if(!done){
-
             done=true;
             resolve();
           }
@@ -775,9 +654,7 @@ async function loadVoices(){
       `${voice.name} (${voice.lang})`;
 
       if(index===0){
-
-        option.selected=
-        true;
+        option.selected=true;
       }
 
       voiceSelect.appendChild(
@@ -792,24 +669,19 @@ function voiceScore(voice){
   const name=
   voice.name.toLowerCase();
 
-  let score=
-  0;
+  let score=0;
 
   if(
     name.includes("google")&&
     name.includes("english")
   ){
-
-    score+=
-    100;
+    score+=100;
   }
 
   if(
     name.includes("natural")
   ){
-
-    score+=
-    90;
+    score+=90;
   }
 
   if(
@@ -817,9 +689,7 @@ function voiceScore(voice){
     name.includes("jenny")||
     name.includes("guy")
   ){
-
-    score+=
-    80;
+    score+=80;
   }
 
   if(
@@ -828,35 +698,19 @@ function voiceScore(voice){
     name.includes("karen")||
     name.includes("moira")
   ){
-
-    score+=
-    70;
+    score+=70;
   }
 
-  if(
-    /en-us/i.test(
-      voice.lang
-    )
-  ){
-
-    score+=
-    20;
+  if(/en-us/i.test(voice.lang)){
+    score+=20;
   }
 
-  if(
-    /en-gb/i.test(
-      voice.lang
-    )
-  ){
-
-    score+=
-    15;
+  if(/en-gb/i.test(voice.lang)){
+    score+=15;
   }
 
   if(voice.default){
-
-    score+=
-    5;
+    score+=5;
   }
 
   return score;
@@ -865,7 +719,6 @@ function voiceScore(voice){
 function getSelectedVoice(){
 
   if(!synth){
-
     return null;
   }
 
@@ -890,12 +743,9 @@ function getSelectedVoice(){
 function stopSpeech(){
 
   speechToken++;
-
-  isSpeechPaused=
-  false;
+  isSpeechPaused=false;
 
   if(synth){
-
     synth.cancel();
   }
 
@@ -931,42 +781,31 @@ function speakText(
     text
   );
 
-  utterance.lang=
-  "en-US";
-
-  utterance.rate=
-  0.92;
-
-  utterance.pitch=
-  1.0;
+  utterance.lang="en-US";
+  utterance.rate=0.92;
+  utterance.pitch=1.0;
 
   const voice=
   getSelectedVoice();
 
   if(voice){
 
-    utterance.voice=
-    voice;
-
-    utterance.lang=
-    voice.lang;
+    utterance.voice=voice;
+    utterance.lang=voice.lang;
   }
 
   utterance.onend=
   ()=>{
 
     if(
-      token!==
-      speechToken
+      token!==speechToken
     ){
-
       return;
     }
 
     disablePauseButton();
 
     if(onEnd){
-
       onEnd();
     }
   };
@@ -975,10 +814,8 @@ function speakText(
   ()=>{
 
     if(
-      token!==
-      speechToken
+      token!==speechToken
     ){
-
       return;
     }
 
@@ -1019,8 +856,7 @@ stepButtons.forEach(
         button.dataset.step
       );
 
-      currentActiveSentenceIndex=
-      null;
+      currentActiveSentenceIndex=null;
 
       stepButtons.forEach(
         btn=>{
@@ -1043,7 +879,6 @@ function renderStep(){
   if(
     !QUESTION.sentences.length
   ){
-
     return;
   }
 
@@ -1067,14 +902,12 @@ function renderStep(){
   wholePracticeResultTop.style.display=
   "none";
 
-  wholePracticeResultTop.innerHTML=
-  "";
+  wholePracticeResultTop.innerHTML="";
 
   wholePracticeResult.style.display=
   "none";
 
-  wholePracticeResult.innerHTML=
-  "";
+  wholePracticeResult.innerHTML="";
 
   [
     step1Cue,
@@ -1159,9 +992,7 @@ function renderStep(){
         "▶ リッスン＆リピート";
 
         listen.onclick=
-        ()=>playStep1(
-          index
-        );
+        ()=>playStep1(index);
 
         const speak=
         document.createElement(
@@ -1175,9 +1006,7 @@ function renderStep(){
         "🎤 発話のみ練習";
 
         speak.onclick=
-        ()=>startStep1SpeakOnly(
-          index
-        );
+        ()=>startStep1SpeakOnly(index);
 
         const localCue=
         document.createElement(
@@ -1319,9 +1148,7 @@ function renderStep(){
   }
 }
 
-function createPracticeButtons(
-  label
-){
+function createPracticeButtons(label){
 
   const listen=
   document.createElement(
@@ -1341,11 +1168,8 @@ function createPracticeButtons(
       currentStep>=2&&
       currentStep<=3
     ){
-
       startStep2to4();
-
     }else{
-
       startStep5to6();
     }
   };
@@ -1399,9 +1223,7 @@ function createPracticeButtons(
   );
 }
 
-function playStep1(
-  index
-){
+function playStep1(index){
 
   stopAllPractice();
   resetTranscript();
@@ -1459,8 +1281,8 @@ function playStep1(
 
         setStep1Cue(
           index,
-          `Sentence${index+1}　Repeat`,
-          true
+          `Sentence${index+1}　準備中…`,
+          false
         );
 
         startDesktopSentenceRecognition(
@@ -1473,9 +1295,7 @@ function playStep1(
   );
 }
 
-function startStep1SpeakOnly(
-  index
-){
+function startStep1SpeakOnly(index){
 
   stopAllPractice();
   resetTranscript();
@@ -1521,14 +1341,16 @@ function startStep1SpeakOnly(
 
   }else{
 
-    clearStep1Cue(
-      index
+    setStep1Cue(
+      index,
+      `Sentence${index+1}　準備中…`,
+      false
     );
 
     startDesktopSentenceRecognition(
       QUESTION.sentences[index],
       index,
-      false
+      true
     );
   }
 }
@@ -1583,7 +1405,6 @@ async function startIOSSentenceRecognition(
     "マイクを開始できませんでした。";
 
     if(useCue){
-
       finishStep1Cue(
         index
       );
@@ -1597,36 +1418,25 @@ async function startIOSSentenceRecognition(
   const r=
   new SpeechRecognition();
 
-  recognition=
-  r;
+  recognition=r;
 
-  r.lang=
-  "en-US";
-
-  r.continuous=
-  false;
-
-  r.interimResults=
-  false;
-
-  r.maxAlternatives=
-  5;
+  r.lang="en-US";
+  r.continuous=false;
+  r.interimResults=false;
+  r.maxAlternatives=5;
 
   let bestText="";
   let bestScore=-1;
   let finished=false;
   let repeatTimer=null;
 
-  const finish=
-  ()=>{
+  const finish=()=>{
 
     if(finished){
-
       return;
     }
 
-    finished=
-    true;
+    finished=true;
 
     clearTimeout(
       repeatTimer
@@ -1635,9 +1445,7 @@ async function startIOSSentenceRecognition(
     if(
       recognition===r
     ){
-
-      recognition=
-      null;
+      recognition=null;
     }
 
     stopIOSPrewarmMic();
@@ -1647,8 +1455,28 @@ async function startIOSSentenceRecognition(
       transcriptDisplay.textContent=
       "文字起こしできませんでした。";
 
-      if(useCue){
+      judgmentDisplay.textContent="";
 
+      if(useCue){
+        finishStep1Cue(
+          index
+        );
+      }
+
+      return;
+    }
+
+    if(
+      bestScore<
+      MIN_SCORABLE_SCORE
+    ){
+
+      transcriptDisplay.textContent=
+      "文字起こしが安定しませんでした。もう一度お試しください。";
+
+      judgmentDisplay.textContent="";
+
+      if(useCue){
         finishStep1Cue(
           index
         );
@@ -1673,7 +1501,6 @@ async function startIOSSentenceRecognition(
     );
 
     if(useCue){
-
       finishStep1Cue(
         index
       );
@@ -1686,7 +1513,6 @@ async function startIOSSentenceRecognition(
     if(
       recognition!==r
     ){
-
       return;
     }
 
@@ -1745,7 +1571,6 @@ async function startIOSSentenceRecognition(
         .trim();
 
         if(!text){
-
           continue;
         }
 
@@ -1768,12 +1593,6 @@ async function startIOSSentenceRecognition(
         }
       }
     }
-
-    if(bestText){
-
-      transcriptDisplay.textContent=
-      bestText;
-    }
   };
 
   r.onend=
@@ -1783,12 +1602,10 @@ async function startIOSSentenceRecognition(
   event=>{
 
     if(finished){
-
       return;
     }
 
-    finished=
-    true;
+    finished=true;
 
     clearTimeout(
       repeatTimer
@@ -1797,9 +1614,7 @@ async function startIOSSentenceRecognition(
     if(
       recognition===r
     ){
-
-      recognition=
-      null;
+      recognition=null;
     }
 
     stopIOSPrewarmMic();
@@ -1818,8 +1633,9 @@ async function startIOSSentenceRecognition(
       "文字起こしを完了できませんでした。";
     }
 
-    if(useCue){
+    judgmentDisplay.textContent="";
 
+    if(useCue){
       finishStep1Cue(
         index
       );
@@ -1835,9 +1651,7 @@ async function startIOSSentenceRecognition(
     if(
       recognition===r
     ){
-
-      recognition=
-      null;
+      recognition=null;
     }
 
     stopIOSPrewarmMic();
@@ -1845,8 +1659,9 @@ async function startIOSSentenceRecognition(
     transcriptDisplay.textContent=
     "文字起こしを開始できませんでした。";
 
-    if(useCue){
+    judgmentDisplay.textContent="";
 
+    if(useCue){
       finishStep1Cue(
         index
       );
@@ -1857,19 +1672,16 @@ async function startIOSSentenceRecognition(
 function stopIOSPrewarmMic(){
 
   if(!iosPrewarmStream){
-
     return;
   }
 
   iosPrewarmStream
   .getTracks()
   .forEach(
-    track=>
-    track.stop()
+    track=>track.stop()
   );
 
-  iosPrewarmStream=
-  null;
+  iosPrewarmStream=null;
 }
 
 function startMobileSentenceRecognition(
@@ -1891,36 +1703,25 @@ function startMobileSentenceRecognition(
   const r=
   new SpeechRecognition();
 
-  recognition=
-  r;
+  recognition=r;
 
-  r.lang=
-  "en-US";
-
-  r.continuous=
-  false;
-
-  r.interimResults=
-  false;
-
-  r.maxAlternatives=
-  5;
+  r.lang="en-US";
+  r.continuous=false;
+  r.interimResults=false;
+  r.maxAlternatives=5;
 
   let bestText="";
   let bestScore=-1;
   let finished=false;
   let repeatTimer=null;
 
-  const finish=
-  ()=>{
+  const finish=()=>{
 
     if(finished){
-
       return;
     }
 
-    finished=
-    true;
+    finished=true;
 
     clearTimeout(
       repeatTimer
@@ -1929,9 +1730,7 @@ function startMobileSentenceRecognition(
     if(
       recognition===r
     ){
-
-      recognition=
-      null;
+      recognition=null;
     }
 
     if(!bestText){
@@ -1939,8 +1738,28 @@ function startMobileSentenceRecognition(
       transcriptDisplay.textContent=
       "文字起こしできませんでした。";
 
-      if(useCue){
+      judgmentDisplay.textContent="";
 
+      if(useCue){
+        finishStep1Cue(
+          index
+        );
+      }
+
+      return;
+    }
+
+    if(
+      bestScore<
+      MIN_SCORABLE_SCORE
+    ){
+
+      transcriptDisplay.textContent=
+      "文字起こしが安定しませんでした。もう一度お試しください。";
+
+      judgmentDisplay.textContent="";
+
+      if(useCue){
         finishStep1Cue(
           index
         );
@@ -1965,7 +1784,6 @@ function startMobileSentenceRecognition(
     );
 
     if(useCue){
-
       finishStep1Cue(
         index
       );
@@ -1978,7 +1796,6 @@ function startMobileSentenceRecognition(
     if(
       recognition!==r
     ){
-
       return;
     }
 
@@ -2037,7 +1854,6 @@ function startMobileSentenceRecognition(
         .trim();
 
         if(!text){
-
           continue;
         }
 
@@ -2060,12 +1876,6 @@ function startMobileSentenceRecognition(
         }
       }
     }
-
-    if(bestText){
-
-      transcriptDisplay.textContent=
-      bestText;
-    }
   };
 
   r.onend=
@@ -2075,7 +1885,6 @@ function startMobileSentenceRecognition(
   event=>{
 
     if(finished){
-
       return;
     }
 
@@ -2093,8 +1902,9 @@ function startMobileSentenceRecognition(
       "文字起こしを完了できませんでした。";
     }
 
-    if(useCue){
+    judgmentDisplay.textContent="";
 
+    if(useCue){
       finishStep1Cue(
         index
       );
@@ -2109,16 +1919,19 @@ function startMobileSentenceRecognition(
 
     transcriptDisplay.textContent=
     "文字起こしを開始できませんでした。";
+
+    judgmentDisplay.textContent="";
   }
 }
 
-function startDesktopSentenceRecognition(
+async function startDesktopSentenceRecognition(
   target,
   index,
   useCue=true
 ){
 
   stopRecognition();
+  stopDesktopPrewarmMic();
 
   if(!SpeechRecognition){
 
@@ -2128,85 +1941,148 @@ function startDesktopSentenceRecognition(
     return;
   }
 
-  const r=
-  new SpeechRecognition();
+  if(
+    navigator.mediaDevices&&
+    navigator.mediaDevices.getUserMedia
+  ){
 
-  recognition=
-  r;
+    try{
 
-  r.lang=
-  "en-US";
+      desktopPrewarmStream=
+      await navigator.mediaDevices
+      .getUserMedia({
+        audio:true
+      });
 
-  r.continuous=
-  true;
+      await new Promise(
+        resolve=>
+        setTimeout(
+          resolve,
+          250
+        )
+      );
 
-  r.interimResults=
-  true;
+    }catch(e){
 
-  let currentText="";
-  let finished=false;
-  let hasSpeech=false;
+      transcriptDisplay.textContent=
+      "マイクを開始できませんでした。";
 
-  const finish=
-  ()=>{
+      judgmentDisplay.textContent="";
 
-    if(
-      finished||
-      !hasSpeech
-    ){
+      if(useCue){
+        finishStep1Cue(
+          index
+        );
+      }
+
+      stopDesktopPrewarmMic();
 
       return;
     }
+  }
 
-    finished=
-    true;
+  const r=
+  new SpeechRecognition();
 
-    clearTimeout(
-      speechEndTimer
-    );
+  recognition=r;
 
-    r.onend=
-    null;
+  r.lang="en-US";
+  r.continuous=false;
+  r.interimResults=false;
+  r.maxAlternatives=5;
+
+  let bestText="";
+  let bestScore=-1;
+  let finished=false;
+
+  const finish=()=>{
+
+    if(finished){
+      return;
+    }
+
+    finished=true;
 
     if(
       recognition===r
     ){
+      recognition=null;
+    }
 
-      try{
+    stopDesktopPrewarmMic();
 
-        r.stop();
+    if(!bestText){
 
-      }catch(e){}
+      transcriptDisplay.textContent=
+      "文字起こしできませんでした。";
 
-      recognition=
-      null;
+      judgmentDisplay.textContent="";
+
+      if(useCue){
+        finishStep1Cue(
+          index
+        );
+      }
+
+      return;
+    }
+
+    if(
+      bestScore<
+      MIN_SCORABLE_SCORE
+    ){
+
+      transcriptDisplay.textContent=
+      "文字起こしが安定しませんでした。もう一度お試しください。";
+
+      judgmentDisplay.textContent="";
+
+      if(useCue){
+        finishStep1Cue(
+          index
+        );
+      }
+
+      return;
     }
 
     recognitionText=
-    currentText;
+    bestText;
 
     transcriptDisplay.textContent=
-    currentText;
-
-    const score=
-    calculateSimilarity(
-      currentText,
-      target
-    );
+    bestText;
 
     showScore(
-      score
+      bestScore
     );
 
     saveBestStep1Score(
       index,
-      score
+      bestScore
     );
 
     if(useCue){
-
       finishStep1Cue(
         index
+      );
+    }
+  };
+
+  r.onstart=
+  ()=>{
+
+    if(
+      recognition!==r
+    ){
+      return;
+    }
+
+    if(useCue){
+
+      setStep1Cue(
+        index,
+        `Sentence${index+1}　Repeat`,
+        true
       );
     }
   };
@@ -2214,45 +2090,99 @@ function startDesktopSentenceRecognition(
   r.onresult=
   event=>{
 
-    currentText=
-    buildCurrentRecognitionText(
-      event.results
-    );
+    for(
+      let i=
+      event.resultIndex;
+      i<
+      event.results.length;
+      i++
+    ){
 
-    transcriptDisplay.textContent=
-    currentText;
+      const result=
+      event.results[i];
 
-    if(currentText){
+      for(
+        let a=0;
+        a<result.length;
+        a++
+      ){
 
-      hasSpeech=
-      true;
+        const text=
+        String(
+          result[a].transcript||
+          ""
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
+        .trim();
 
-      clearTimeout(
-        speechEndTimer
-      );
+        if(!text){
+          continue;
+        }
 
-      speechEndTimer=
-      setTimeout(
-        finish,
-        SPEECH_END_SILENCE_MS
-      );
+        const score=
+        calculateSimilarity(
+          text,
+          target
+        );
+
+        if(
+          score>
+          bestScore
+        ){
+
+          bestScore=
+          score;
+
+          bestText=
+          text;
+        }
+      }
     }
   };
 
   r.onend=
-  ()=>{
+  finish;
+
+  r.onerror=
+  event=>{
+
+    if(finished){
+      return;
+    }
+
+    finished=true;
 
     if(
       recognition===r
     ){
-
-      recognition=
-      null;
+      recognition=null;
     }
 
-    if(hasSpeech){
+    stopDesktopPrewarmMic();
 
-      finish();
+    if(
+      event.error===
+      "no-speech"
+    ){
+
+      transcriptDisplay.textContent=
+      "音声を認識できませんでした。";
+
+    }else{
+
+      transcriptDisplay.textContent=
+      "文字起こしを完了できませんでした。";
+    }
+
+    judgmentDisplay.textContent="";
+
+    if(useCue){
+      finishStep1Cue(
+        index
+      );
     }
   };
 
@@ -2260,7 +2190,42 @@ function startDesktopSentenceRecognition(
 
     r.start();
 
-  }catch(e){}
+  }catch(e){
+
+    if(
+      recognition===r
+    ){
+      recognition=null;
+    }
+
+    stopDesktopPrewarmMic();
+
+    transcriptDisplay.textContent=
+    "文字起こしを開始できませんでした。";
+
+    judgmentDisplay.textContent="";
+
+    if(useCue){
+      finishStep1Cue(
+        index
+      );
+    }
+  }
+}
+
+function stopDesktopPrewarmMic(){
+
+  if(!desktopPrewarmStream){
+    return;
+  }
+
+  desktopPrewarmStream
+  .getTracks()
+  .forEach(
+    track=>track.stop()
+  );
+
+  desktopPrewarmStream=null;
 }
 
 function saveBestStep1Score(
@@ -2275,17 +2240,13 @@ function saveBestStep1Score(
     oldScore===null||
     score>oldScore
   ){
-
-    step1Scores[index]=
-    score;
+    step1Scores[index]=score;
   }
 
   refreshStep1Results();
 }
 
-function getMobileStep1Cue(
-  index
-){
+function getMobileStep1Cue(index){
 
   return step1Area.querySelector(
     `[data-cue-index="${index}"]`
@@ -2319,12 +2280,9 @@ function setStep1Cue(
   }
 }
 
-function clearStep1Cue(
-  index
-){
+function clearStep1Cue(index){
 
-  step1Cue.textContent=
-  "";
+  step1Cue.textContent="";
 
   step1Cue.classList.remove(
     "blink"
@@ -2337,8 +2295,7 @@ function clearStep1Cue(
 
   if(mobileCue){
 
-    mobileCue.textContent=
-    "";
+    mobileCue.textContent="";
 
     mobileCue.classList.remove(
       "blink"
@@ -2346,9 +2303,7 @@ function clearStep1Cue(
   }
 }
 
-function finishStep1Cue(
-  index
-){
+function finishStep1Cue(index){
 
   step1Cue.classList.remove(
     "blink"
@@ -2372,9 +2327,7 @@ function finishStep1Cue(
 
   cueClearTimer=
   setTimeout(
-    ()=>clearStep1Cue(
-      index
-    ),
+    ()=>clearStep1Cue(index),
     CUE_CLEAR_DELAY_MS
   );
 }
@@ -2390,14 +2343,14 @@ function refreshStep1Results(){
       );
 
       if(!target){
-
         return;
       }
 
-      if(score===null){
+      if(
+        score===null
+      ){
 
-        target.innerHTML=
-        "";
+        target.innerHTML="";
 
         return;
       }
@@ -2413,14 +2366,14 @@ function refreshStep1Results(){
 
   const attempted=
   step1Scores.filter(
-    score=>
-    score!==null
+    score=>score!==null
   ).length;
 
-  let html=
-  "";
+  let html="";
 
-  if(attempted===0){
+  if(
+    attempted===0
+  ){
 
     html=
     "3センテンスすべて練習してください。";
@@ -2445,11 +2398,12 @@ function refreshStep1Results(){
     )
     .filter(
       item=>
-      item.score<
-      PASS_SCORE
+      item.score<PASS_SCORE
     );
 
-    if(!failed.length){
+    if(
+      !failed.length
+    ){
 
       html=
       '<span class="pass">Step 1 合格：すべてのセンテンスが80点以上です。</span>';
@@ -2472,14 +2426,11 @@ function startStep2to4(){
 
   stopAllPractice();
 
-  practiceRunning=
-  true;
+  practiceRunning=true;
 
-  currentSegment=
-  0;
+  currentSegment=0;
 
-  step24Result.textContent=
-  "";
+  step24Result.textContent="";
 
   playNextStep2to4();
 }
@@ -2489,7 +2440,6 @@ function playNextStep2to4(){
   if(
     !practiceRunning
   ){
-
     return;
   }
 
@@ -2519,7 +2469,6 @@ function playNextStep2to4(){
       if(
         !practiceRunning
       ){
-
         return;
       }
 
@@ -2542,7 +2491,6 @@ function playNextStep2to4(){
           if(
             !practiceRunning
           ){
-
             return;
           }
 
@@ -2563,15 +2511,13 @@ function playNextStep2to4(){
 
 function finishStep2to4(){
 
-  practiceRunning=
-  false;
+  practiceRunning=false;
 
   step24Cue.classList.remove(
     "blink"
   );
 
-  step24Cue.textContent=
-  "";
+  step24Cue.textContent="";
 
   step24Result.innerHTML=
   '<span class="pass">練習完了：3センテンスすべてリピートしました。</span>';
@@ -2582,11 +2528,9 @@ function startStep5to6(){
   stopAllPractice();
   resetTranscript();
 
-  practiceRunning=
-  true;
+  practiceRunning=true;
 
-  repeatCue.textContent=
-  "";
+  repeatCue.textContent="";
 
   repeatCue.classList.remove(
     "blink"
@@ -2615,7 +2559,6 @@ function startStep5to6(){
       if(
         !practiceRunning
       ){
-
         return;
       }
 
@@ -2755,20 +2698,12 @@ async function startAndroidWholeSpeechCheck(){
     const SPEECH_THRESHOLD=
     0.018;
 
-    let speechStarted=
-    false;
-
-    let totalSpeechMs=
-    0;
-
+    let speechStarted=false;
+    let totalSpeechMs=0;
     let lastFrameTime=
     performance.now();
-
-    let lastVoiceTime=
-    0;
-
-    let finished=
-    false;
+    let lastVoiceTime=0;
+    let finished=false;
 
     setCue(
       repeatCue,
@@ -2784,22 +2719,18 @@ async function startAndroidWholeSpeechCheck(){
     ()=>{
 
       if(finished){
-
         return;
       }
 
-      finished=
-      true;
+      finished=true;
 
-      practiceRunning=
-      false;
+      practiceRunning=false;
 
       repeatCue.classList.remove(
         "blink"
       );
 
-      repeatCue.textContent=
-      "";
+      repeatCue.textContent="";
 
       setWholePracticeResult(
         '<span class="pass">合格：3センテンスのリピート練習が完了しました。</span>',
@@ -2816,7 +2747,6 @@ async function startAndroidWholeSpeechCheck(){
         finished||
         !practiceRunning
       ){
-
         return;
       }
 
@@ -2825,8 +2755,7 @@ async function startAndroidWholeSpeechCheck(){
         data
       );
 
-      let sum=
-      0;
+      let sum=0;
 
       for(
         let i=0;
@@ -2837,8 +2766,7 @@ async function startAndroidWholeSpeechCheck(){
         const v=
         (data[i]-128)/128;
 
-        sum+=
-        v*v;
+        sum+=v*v;
       }
 
       const rms=
@@ -2861,13 +2789,10 @@ async function startAndroidWholeSpeechCheck(){
       ){
 
         if(!speechStarted){
-
-          speechStarted=
-          true;
+          speechStarted=true;
         }
 
-        totalSpeechMs+=
-        delta;
+        totalSpeechMs+=delta;
 
         lastVoiceTime=
         now;
@@ -2907,8 +2832,7 @@ async function startAndroidWholeSpeechCheck(){
       true
     );
 
-    repeatCue.textContent=
-    "";
+    repeatCue.textContent="";
 
     repeatCue.classList.remove(
       "blink"
@@ -2928,44 +2852,34 @@ function stopAndroidWholeSpeechCheck(){
       wholeCheckRaf
     );
 
-    wholeCheckRaf=
-    null;
+    wholeCheckRaf=null;
   }
 
   if(wholeCheckSource){
 
     try{
-
       wholeCheckSource.disconnect();
-
     }catch(e){}
 
-    wholeCheckSource=
-    null;
+    wholeCheckSource=null;
   }
 
   if(wholeCheckAnalyser){
 
     try{
-
       wholeCheckAnalyser.disconnect();
-
     }catch(e){}
 
-    wholeCheckAnalyser=
-    null;
+    wholeCheckAnalyser=null;
   }
 
   if(wholeCheckAudioContext){
 
     try{
-
       wholeCheckAudioContext.close();
-
     }catch(e){}
 
-    wholeCheckAudioContext=
-    null;
+    wholeCheckAudioContext=null;
   }
 
   if(
@@ -2976,16 +2890,13 @@ function stopAndroidWholeSpeechCheck(){
     wholeCheckStream
     .getTracks()
     .forEach(
-      track=>
-      track.stop()
+      track=>track.stop()
     );
   }
 
-  wholeCheckStream=
-  null;
+  wholeCheckStream=null;
 
-  wholeCheckOwnsStream=
-  false;
+  wholeCheckOwnsStream=false;
 }
 
 function startDesktopWholeRecognition(
@@ -3005,17 +2916,12 @@ function startDesktopWholeRecognition(
   const r=
   new SpeechRecognition();
 
-  recognition=
-  r;
+  recognition=r;
 
-  r.lang=
-  "en-US";
-
-  r.continuous=
-  true;
-
-  r.interimResults=
-  true;
+  r.lang="en-US";
+  r.continuous=true;
+  r.interimResults=true;
+  r.maxAlternatives=5;
 
   let bestText="";
   let bestScore=-1;
@@ -3029,47 +2935,57 @@ function startDesktopWholeRecognition(
       finished||
       !hasSpeech
     ){
-
       return;
     }
 
-    finished=
-    true;
+    finished=true;
 
     clearTimeout(
       speechEndTimer
     );
 
-    r.onend=
-    null;
+    r.onend=null;
 
     if(
       recognition===r
     ){
 
       try{
-
         r.stop();
-
       }catch(e){}
 
-      recognition=
-      null;
+      recognition=null;
+    }
+
+    if(
+      !bestText||
+      bestScore<
+      MIN_SCORABLE_SCORE
+    ){
+
+      recognitionText="";
+
+      transcriptDisplay.textContent=
+      "文字起こしが安定しませんでした。もう一度お試しください。";
+
+      judgmentDisplay.textContent="";
+
+      finishCue(
+        repeatCue
+      );
+
+      return;
     }
 
     recognitionText=
     bestText;
 
     transcriptDisplay.textContent=
-    bestText||
-    "文字起こしできませんでした。";
+    bestText;
 
-    if(bestText){
-
-      showScore(
-        bestScore
-      );
-    }
+    showScore(
+      bestScore
+    );
 
     finishCue(
       repeatCue
@@ -3101,12 +3017,10 @@ function startDesktopWholeRecognition(
     );
 
     if(!candidate){
-
       return;
     }
 
-    hasSpeech=
-    true;
+    hasSpeech=true;
 
     const score=
     calculateSimilarity(
@@ -3126,9 +3040,6 @@ function startDesktopWholeRecognition(
       candidate;
     }
 
-    transcriptDisplay.textContent=
-    bestText;
-
     clearTimeout(
       speechEndTimer
     );
@@ -3146,13 +3057,10 @@ function startDesktopWholeRecognition(
     if(
       recognition===r
     ){
-
-      recognition=
-      null;
+      recognition=null;
     }
 
     if(hasSpeech){
-
       finish();
     }
   };
@@ -3161,7 +3069,13 @@ function startDesktopWholeRecognition(
 
     r.start();
 
-  }catch(e){}
+  }catch(e){
+
+    transcriptDisplay.textContent=
+    "文字起こしを開始できませんでした。";
+
+    judgmentDisplay.textContent="";
+  }
 }
 
 function startSpeakOnlyWhole(){
@@ -3169,8 +3083,7 @@ function startSpeakOnlyWhole(){
   stopAllPractice();
   resetTranscript();
 
-  practiceRunning=
-  true;
+  practiceRunning=true;
 
   if(IS_ANDROID){
 
@@ -3206,8 +3119,7 @@ function buildCurrentRecognitionText(
   results
 ){
 
-  const parts=
-  [];
+  const parts=[];
 
   for(
     let i=0;
@@ -3227,7 +3139,6 @@ function buildCurrentRecognitionText(
     .trim();
 
     if(!text){
-
       continue;
     }
 
@@ -3246,7 +3157,6 @@ function buildCurrentRecognitionText(
       normalize(text)===
       previous
     ){
-
       continue;
     }
 
@@ -3268,33 +3178,22 @@ function calculatePracticeTime(
   wordCount
 ){
 
-  if(
-    wordCount<=8
-  ){
-
+  if(wordCount<=8){
     return 4000;
   }
 
-  if(
-    wordCount<=14
-  ){
-
+  if(wordCount<=14){
     return 5000;
   }
 
-  if(
-    wordCount<=20
-  ){
-
+  if(wordCount<=20){
     return 6500;
   }
 
   return 8000;
 }
 
-function countWords(
-  text
-){
+function countWords(text){
 
   return String(
     text||
@@ -3313,24 +3212,17 @@ function stopRecognition(){
   );
 
   if(!recognition){
-
     return;
   }
 
-  recognition.onend=
-  null;
-
-  recognition.onerror=
-  null;
+  recognition.onend=null;
+  recognition.onerror=null;
 
   try{
-
     recognition.stop();
-
   }catch(e){}
 
-  recognition=
-  null;
+  recognition=null;
 }
 
 function enablePauseButton(){
@@ -3345,9 +3237,7 @@ function enablePauseButton(){
     synth&&
     synth.speaking
   ){
-
-    button.disabled=
-    false;
+    button.disabled=false;
   }
 }
 
@@ -3360,15 +3250,13 @@ function disablePauseButton(){
 
   if(button){
 
-    button.disabled=
-    true;
+    button.disabled=true;
 
     button.textContent=
     "一時停止";
   }
 
-  isSpeechPaused=
-  false;
+  isSpeechPaused=false;
 }
 
 function toggleSpeechPause(
@@ -3379,7 +3267,6 @@ function toggleSpeechPause(
     !synth||
     !synth.speaking
   ){
-
     return;
   }
 
@@ -3387,8 +3274,7 @@ function toggleSpeechPause(
 
     synth.pause();
 
-    isSpeechPaused=
-    true;
+    isSpeechPaused=true;
 
     button.textContent=
     "再開";
@@ -3397,8 +3283,7 @@ function toggleSpeechPause(
 
     synth.resume();
 
-    isSpeechPaused=
-    false;
+    isSpeechPaused=false;
 
     button.textContent=
     "一時停止";
@@ -3407,8 +3292,7 @@ function toggleSpeechPause(
 
 function stopAllPractice(){
 
-  practiceRunning=
-  false;
+  practiceRunning=false;
 
   clearTimeout(
     speechEndTimer
@@ -3422,15 +3306,11 @@ function stopAllPractice(){
   stopRecognition();
   stopAndroidWholeSpeechCheck();
   stopIOSPrewarmMic();
+  stopDesktopPrewarmMic();
 
-  step1Cue.textContent=
-  "";
-
-  step24Cue.textContent=
-  "";
-
-  repeatCue.textContent=
-  "";
+  step1Cue.textContent="";
+  step24Cue.textContent="";
+  repeatCue.textContent="";
 
   [
     step1Cue,
@@ -3450,8 +3330,7 @@ function stopAllPractice(){
   .forEach(
     cue=>{
 
-      cue.textContent=
-      "";
+      cue.textContent="";
 
       cue.classList.remove(
         "blink"
@@ -3462,23 +3341,18 @@ function stopAllPractice(){
 
 function resetTranscript(){
 
-  recognitionText=
-  "";
+  recognitionText="";
 
   transcriptDisplay.textContent=
   "リピートした英文がここに表示されます。";
 
-  judgmentDisplay.textContent=
-  "";
+  judgmentDisplay.textContent="";
 
-  step24Result.textContent=
-  "";
+  step24Result.textContent="";
 
-  wholePracticeResultTop.innerHTML=
-  "";
+  wholePracticeResultTop.innerHTML="";
 
-  wholePracticeResult.innerHTML=
-  "";
+  wholePracticeResult.innerHTML="";
 }
 
 function setCue(
@@ -3511,10 +3385,7 @@ function finishCue(
   cueClearTimer=
   setTimeout(
     ()=>{
-
-      element.textContent=
-      "";
-
+      element.textContent="";
     },
     CUE_CLEAR_DELAY_MS
   );
@@ -3555,7 +3426,6 @@ function calculateSimilarity(
     !a.length||
     !b.length
   ){
-
     return 0;
   }
 
@@ -3581,9 +3451,7 @@ function calculateSimilarity(
   );
 }
 
-function normalize(
-  text
-){
+function normalize(text){
 
   return String(
     text||
@@ -3627,9 +3495,7 @@ function levenshteinWords(
     i<=a.length;
     i++
   ){
-
-    matrix[i][0]=
-    i;
+    matrix[i][0]=i;
   }
 
   for(
@@ -3637,9 +3503,7 @@ function levenshteinWords(
     j<=b.length;
     j++
   ){
-
-    matrix[0][j]=
-    j;
+    matrix[0][j]=j;
   }
 
   for(
@@ -3799,9 +3663,7 @@ window.addEventListener(
   }
 );
 
-function escapeHtml(
-  text
-){
+function escapeHtml(text){
 
   return String(
     text
@@ -3836,7 +3698,6 @@ async()=>{
     mediaRecorder.state===
     "recording"
   ){
-
     return;
   }
 
@@ -3848,8 +3709,7 @@ async()=>{
       audio:true
     });
 
-    recordedChunks=
-    [];
+    recordedChunks=[];
 
     mediaRecorder=
     new MediaRecorder(
@@ -3895,19 +3755,16 @@ async()=>{
         blob
       );
 
-      recordPlayback.innerHTML=
-      "";
+      recordPlayback.innerHTML="";
 
       const audio=
       document.createElement(
         "audio"
       );
 
-      audio.controls=
-      true;
+      audio.controls=true;
 
-      audio.src=
-      recordedUrl;
+      audio.src=recordedUrl;
 
       recordPlayback.appendChild(
         audio
@@ -3918,12 +3775,10 @@ async()=>{
         recordStream
         .getTracks()
         .forEach(
-          track=>
-          track.stop()
+          track=>track.stop()
         );
 
-        recordStream=
-        null;
+        recordStream=null;
       }
     };
 
@@ -3932,11 +3787,9 @@ async()=>{
     recordStatus.textContent=
     "● Recording";
 
-    recordButton.disabled=
-    true;
+    recordButton.disabled=true;
 
-    stopRecordButton.disabled=
-    false;
+    stopRecordButton.disabled=false;
 
   }catch(e){
 
@@ -3957,14 +3810,11 @@ stopRecordButton.onclick=
     mediaRecorder.stop();
   }
 
-  recordStatus.textContent=
-  "";
+  recordStatus.textContent="";
 
-  recordButton.disabled=
-  false;
+  recordButton.disabled=false;
 
-  stopRecordButton.disabled=
-  true;
+  stopRecordButton.disabled=true;
 };
 
 </script>
