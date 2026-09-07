@@ -5,12 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>英語リピート練習</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f6f6f6;color:#111}.app{max-width:900px;min-height:100vh;margin:0 auto;padding:30px 36px 70px;background:#fff}h1{margin:0 0 10px;font-size:32px}#practiceGuide{margin:0 0 20px;font-size:15px;line-height:1.7;color:#555}.selector-panel{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin:0 0 22px;padding:14px;background:#f3f3f3;border-radius:9px}.selector-panel label{display:block;margin-bottom:5px;font-size:13px;font-weight:bold}.selector-panel select{width:100%;padding:9px 10px;border:1px solid #aaa;border-radius:6px;background:#fff;font-size:15px}.voice-row{margin-top:10px}.voice-row label{margin-right:6px;font-size:13px;font-weight:bold}#voiceSelect{max-width:100%;padding:7px 9px;border:1px solid #aaa;border-radius:6px;background:#fff}.question{margin-bottom:12px;font-size:27px;font-weight:bold;line-height:1.45}button{font-family:inherit;cursor:pointer}.button{padding:10px 16px;margin:4px 5px 4px 0;font-size:16px;border:1px solid #999;border-radius:6px;background:#fff}.button.primary{background:#111;color:#fff;border-color:#111}.button.record{background:#b00020;color:#fff;border-color:#b00020}.button:disabled{opacity:.4;cursor:default}.record-controls{margin:8px 0 12px}#recordStatus{margin-left:8px;font-weight:bold;color:#b00020}#recordPlayback{margin-top:10px}#recordPlayback audio{width:100%;max-width:520px}#transcriptSection{margin:18px 0}.transcript-header{display:flex;align-items:baseline;justify-content:space-between;gap:15px;margin-bottom:7px}.transcript-title{font-size:19px;font-weight:bold}#judgment{font-size:21px;font-weight:bold;white-space:nowrap}#transcript{min-height:78px;padding:14px;background:#f3f3f3;border-radius:8px;font-size:19px;line-height:1.55}.pass{color:#16803a}.retry{color:#c00000}.step-title{margin:22px 0 13px;font-size:21px;font-weight:bold}.step-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}.step-button{padding:11px 14px;font-size:15px;border:1px solid #bbb;border-radius:7px;background:#fff}.step-button.active{background:#111;color:#fff;border-color:#111}#stepDescription{margin:0 0 7px;font-size:18px;font-weight:bold}#step1Instruction{display:none;margin:0 0 10px;color:#c00000}.step1-main-line{display:flex;align-items:center;flex-wrap:wrap;gap:14px;font-size:16px}#step1Cue{font-size:19px;font-weight:bold;color:#c00000}.mobile-step1-cue{display:none;margin:8px 0 3px;min-height:26px;font-size:20px;font-weight:bold;color:#c00000}.cue-note{margin-top:4px;font-size:13px;color:#c00000}.step1-summary{display:none;margin:12px 0 14px;padding:13px 15px;background:#f3f3f3;border-radius:8px;font-size:17px;font-weight:bold;line-height:1.6}.sentence-result{min-height:24px;margin-top:7px;font-size:18px;font-weight:bold}#step24Area{display:none;margin:0 0 10px}#step24Cue{min-height:24px;margin:0 0 5px;font-size:19px;font-weight:bold;color:#c00000}#step24Notice{font-size:16px}#step24Result{margin-top:9px;font-size:19px;font-weight:bold}#repeatInstruction{display:none;margin:0 0 10px;color:#c00000}.repeat-main-line{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:16px}#repeatCue{font-size:22px;font-weight:bold;color:#c00000}.blink{animation:repeatBlink .7s infinite}@keyframes repeatBlink{0%,45%{opacity:1}50%,95%{opacity:.2}100%{opacity:1}}#hintBox{min-height:72px;margin-bottom:16px;padding:18px 20px;background:#f3f3f3;border-radius:9px;font-size:20px;line-height:1.7}.no-hint{text-align:center;color:#777}.sentence-card{margin-bottom:14px;padding:17px 18px;background:#f3f3f3;border-radius:9px}.sentence-card.active-card{outline:2px solid #aaa}.sentence-text{margin-bottom:9px;font-size:20px;line-height:1.55}#practiceControls{margin-top:12px}.whole-practice-result{display:none;margin:12px 0 4px;padding:13px 15px;background:#f3f3f3;border-radius:8px;font-size:18px;font-weight:bold;line-height:1.6}#loading{margin-top:8px;color:#777}#dataError{display:none;margin:10px 0;padding:10px;background:#fff3f3;color:#b00020;border-radius:6px}
-@media(max-width:700px){.app{padding:20px 14px 45px}h1{font-size:26px}#practiceGuide{margin-bottom:16px;font-size:14px}.selector-panel{grid-template-columns:1fr;gap:9px;padding:12px}.question{font-size:22px}.button{width:100%;min-height:44px;margin:4px 0;font-size:16px}.step-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.step-button{width:100%;padding:10px 6px;font-size:14px}#transcriptSection{margin:9px 0 4px}#transcript{min-height:62px;padding:11px;font-size:17px}#judgment{font-size:18px}#hintBox{padding:15px;font-size:18px}.sentence-text{font-size:18px}.sentence-card{padding:14px}#stepDescription{font-size:17px}.cue-note{font-size:12px}.mobile-step1-cue{display:block}#step1Cue{display:none}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f6f6f6;color:#111}.app{max-width:900px;min-height:100vh;margin:0 auto;padding:30px 36px 70px;background:#fff}h1{margin:0 0 10px;font-size:32px}#practiceGuide{margin:0 0 20px;font-size:15px;line-height:1.7;color:#555}.selector-panel{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin:0 0 22px;padding:14px;background:#f3f3f3;border-radius:9px}.selector-panel label{display:block;margin-bottom:5px;font-size:13px;font-weight:bold}.selector-panel select{width:100%;padding:9px 10px;border:1px solid #aaa;border-radius:6px;background:#fff;font-size:15px}.voice-row{margin-top:10px}.voice-row label{margin-right:6px;font-size:13px;font-weight:bold}#voiceSelect{max-width:100%;padding:7px 9px;border:1px solid #aaa;border-radius:6px;background:#fff}.question{margin-bottom:12px;font-size:27px;font-weight:bold;line-height:1.45}button{font-family:inherit;cursor:pointer}.button{padding:10px 16px;margin:4px 5px 4px 0;font-size:16px;border:1px solid #999;border-radius:6px;background:#fff}.button.primary{background:#111;color:#fff;border-color:#111}.button.record{background:#b00020;color:#fff;border-color:#b00020}.button:disabled{opacity:.4;cursor:default}.record-controls{margin:8px 0 12px}#recordStatus{margin-left:8px;font-weight:bold;color:#b00020}#recordPlayback{margin-top:10px}#recordPlayback audio{width:100%;max-width:520px}#transcriptSection{margin:18px 0}.transcript-header{display:flex;align-items:baseline;justify-content:space-between;gap:15px;margin-bottom:7px}.transcript-title{font-size:19px;font-weight:bold}#judgment{font-size:21px;font-weight:bold;white-space:nowrap}#transcript{min-height:78px;padding:14px;background:#f3f3f3;border-radius:8px;font-size:19px;line-height:1.55}.pass{color:#16803a}.retry{color:#c00000}.step-title{margin:22px 0 13px;font-size:21px;font-weight:bold}.step-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}.step-button{padding:11px 14px;font-size:15px;border:1px solid #bbb;border-radius:7px;background:#fff}.step-button.active{background:#111;color:#fff;border-color:#111}#stepDescription{margin:0 0 7px;font-size:18px;font-weight:bold}#step1Instruction{display:none;margin:0 0 10px;color:#c00000}.step1-main-line{display:flex;align-items:center;flex-wrap:wrap;gap:14px;font-size:16px}#step1Cue{display:none;font-size:19px;font-weight:bold;color:#c00000}.mobile-step1-cue{display:block;margin:8px 0 3px;min-height:26px;font-size:20px;font-weight:bold;color:#c00000}.cue-note{margin-top:4px;font-size:13px;color:#c00000}.step1-summary{display:none;margin:12px 0 14px;padding:13px 15px;background:#f3f3f3;border-radius:8px;font-size:17px;font-weight:bold;line-height:1.6}.sentence-result{min-height:24px;margin-top:7px;font-size:18px;font-weight:bold}#step24Area{display:none;margin:0 0 10px}#step24Cue{min-height:24px;margin:0 0 5px;font-size:19px;font-weight:bold;color:#c00000}#step24Notice{font-size:16px}#step24Result{margin-top:9px;font-size:19px;font-weight:bold}#repeatInstruction{display:none;margin:0 0 10px;color:#c00000}.repeat-main-line{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:16px}#repeatCue{font-size:22px;font-weight:bold;color:#c00000}.blink{animation:repeatBlink .7s infinite}@keyframes repeatBlink{0%,45%{opacity:1}50%,95%{opacity:.2}100%{opacity:1}}#hintBox{min-height:72px;margin-bottom:16px;padding:18px 20px;background:#f3f3f3;border-radius:9px;font-size:20px;line-height:1.7}.no-hint{text-align:center;color:#777}.sentence-card{margin-bottom:14px;padding:17px 18px;background:#f3f3f3;border-radius:9px}.sentence-card.active-card{outline:2px solid #aaa}.sentence-text{margin-bottom:9px;font-size:20px;line-height:1.55}#practiceControls{margin-top:12px}.whole-practice-result{display:none;margin:12px 0 4px;padding:13px 15px;background:#f3f3f3;border-radius:8px;font-size:18px;font-weight:bold;line-height:1.6}#loading{margin-top:8px;color:#777}#dataError{display:none;margin:10px 0;padding:10px;background:#fff3f3;color:#b00020;border-radius:6px}
+@media(max-width:700px){.app{padding:20px 14px 45px}h1{font-size:26px}#practiceGuide{margin-bottom:16px;font-size:14px}.selector-panel{grid-template-columns:1fr;gap:9px;padding:12px}.question{font-size:22px}.button{width:100%;min-height:44px;margin:4px 0;font-size:16px}.step-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.step-button{width:100%;padding:10px 6px;font-size:14px}#transcriptSection{margin:9px 0 4px}#transcript{min-height:62px;padding:11px;font-size:17px}#judgment{font-size:18px}#hintBox{padding:15px;font-size:18px}.sentence-text{font-size:18px}.sentence-card{padding:14px}#stepDescription{font-size:17px}.cue-note{font-size:12px}}
 </style>
 </head>
+
 <body>
 <div class="app">
+
 <h1 id="appTitle">英語リピート練習</h1>
 
 <div id="practiceGuide">
@@ -22,6 +24,7 @@
     <label for="topicSelect">Topic</label>
     <select id="topicSelect"></select>
   </div>
+
   <div>
     <label for="questionSelect">問題</label>
     <select id="questionSelect"></select>
@@ -39,8 +42,8 @@
 </button>
 
 <div class="voice-row">
-<label for="voiceSelect">英語音声</label>
-<select id="voiceSelect"></select>
+  <label for="voiceSelect">英語音声</label>
+  <select id="voiceSelect"></select>
 </div>
 
 <div class="record-controls">
@@ -48,18 +51,6 @@
   <button id="stopRecordButton" class="button" disabled>■ 停止</button>
   <span id="recordStatus"></span>
   <div id="recordPlayback"></div>
-</div>
-
-<div id="transcriptHome"></div>
-
-<div id="transcriptSection">
-  <div class="transcript-header">
-    <div class="transcript-title">文字起こし</div>
-    <div id="judgment"></div>
-  </div>
-  <div id="transcript">
-    リピートした英文がここに表示されます。
-  </div>
 </div>
 
 <div class="step-title">練習ステップ</div>
@@ -70,7 +61,19 @@
   <button class="step-button" data-step="3">Step 3</button>
   <button class="step-button" data-step="4">Step 4</button>
   <button class="step-button" data-step="5">Step 5</button>
-  <button class="step-button" data-step="6">Step 6</button>
+</div>
+
+<div id="transcriptHome"></div>
+
+<div id="transcriptSection">
+  <div class="transcript-header">
+    <div class="transcript-title">文字起こし</div>
+    <div id="judgment"></div>
+  </div>
+
+  <div id="transcript">
+    リピートした英文がここに表示されます。
+  </div>
 </div>
 
 <div id="stepDescription"></div>
@@ -80,6 +83,7 @@
     <span>音声が終わってからリピートしてください。</span>
     <span id="step1Cue"></span>
   </div>
+
   <div class="cue-note">
     ※「Repeat」が表示されてから話してください。
   </div>
@@ -87,9 +91,11 @@
 
 <div id="step24Area">
   <div id="step24Cue"></div>
+
   <div id="step24Notice">
     音声を聞いた後、1センテンスずつリピートしてください。
   </div>
+
   <div id="step24Result"></div>
 </div>
 
@@ -98,9 +104,11 @@
     <span>「Repeat」が表示されてから話してください。</span>
     <span id="repeatCue"></span>
   </div>
+
   <div class="cue-note">
     ※Androidでは3センテンスの文字起こし・点数判定は行いません。
   </div>
+
   <div id="wholePracticeResultTop" class="whole-practice-result"></div>
 </div>
 
@@ -117,6 +125,7 @@
 <div id="wholePracticeResult" class="whole-practice-result"></div>
 
 <div id="loading"></div>
+
 </div>
 
 <script>
@@ -128,6 +137,7 @@ const PASS_SCORE=80;
 const SPEECH_END_SILENCE_MS=2500;
 const CUE_CLEAR_DELAY_MS=500;
 const MOBILE_BREAKPOINT=700;
+
 const ANDROID_REPEAT_DELAY_MS=650;
 const ANDROID_WHOLE_SILENCE_MS=1800;
 const ANDROID_MIN_SPEECH_MS=2500;
@@ -141,6 +151,9 @@ const IS_IOS=
   navigator.platform==="MacIntel"&&
   navigator.maxTouchPoints>1
 );
+
+const USE_SINGLE_SENTENCE_RECOGNITION=
+IS_ANDROID||IS_IOS;
 
 let QUESTION={
   question:"",
@@ -288,6 +301,7 @@ document.querySelectorAll(".step-button");
 init();
 
 async function init(){
+
   await loadVoices();
   await loadStudentFromUrl();
 }
@@ -301,6 +315,7 @@ async function fetchJson(url){
   );
 
   if(!response.ok){
+
     throw new Error(
       "データ取得に失敗しました。"
     );
@@ -366,6 +381,7 @@ async function loadStudentRecords(
       !result.success||
       !Array.isArray(result.data)
     ){
+
       throw new Error(
         "問題データを取得できませんでした。"
       );
@@ -423,6 +439,7 @@ async function loadStudentRecords(
           requestedTopic
         )
       ){
+
         topicSelect.value=
         requestedTopic;
       }
@@ -497,10 +514,10 @@ function populateQuestionSelect(
       [...questionSelect.options]
       .some(
         option=>
-        option.value===
-        requestedNo
+        option.value===requestedNo
       )
     ){
+
       questionSelect.value=
       requestedNo;
     }
@@ -565,8 +582,11 @@ function applySelectedQuestion(){
   questionAudioButton.disabled=
   false;
 
-  currentStep=1;
-  currentActiveSentenceIndex=null;
+  currentStep=
+  1;
+
+  currentActiveSentenceIndex=
+  null;
 
   stepButtons.forEach(
     button=>{
@@ -642,6 +662,7 @@ function updateUrl(){
 }
 
 function setLoading(text){
+
   loadingDisplay.textContent=
   text;
 }
@@ -660,7 +681,8 @@ function hideError(){
   dataError.style.display=
   "none";
 
-  dataError.textContent="";
+  dataError.textContent=
+  "";
 }
 
 async function loadVoices(){
@@ -753,7 +775,9 @@ async function loadVoices(){
       `${voice.name} (${voice.lang})`;
 
       if(index===0){
-        option.selected=true;
+
+        option.selected=
+        true;
       }
 
       voiceSelect.appendChild(
@@ -768,19 +792,24 @@ function voiceScore(voice){
   const name=
   voice.name.toLowerCase();
 
-  let score=0;
+  let score=
+  0;
 
   if(
     name.includes("google")&&
     name.includes("english")
   ){
-    score+=100;
+
+    score+=
+    100;
   }
 
   if(
     name.includes("natural")
   ){
-    score+=90;
+
+    score+=
+    90;
   }
 
   if(
@@ -788,7 +817,9 @@ function voiceScore(voice){
     name.includes("jenny")||
     name.includes("guy")
   ){
-    score+=80;
+
+    score+=
+    80;
   }
 
   if(
@@ -797,7 +828,9 @@ function voiceScore(voice){
     name.includes("karen")||
     name.includes("moira")
   ){
-    score+=70;
+
+    score+=
+    70;
   }
 
   if(
@@ -805,7 +838,9 @@ function voiceScore(voice){
       voice.lang
     )
   ){
-    score+=20;
+
+    score+=
+    20;
   }
 
   if(
@@ -813,11 +848,15 @@ function voiceScore(voice){
       voice.lang
     )
   ){
-    score+=15;
+
+    score+=
+    15;
   }
 
   if(voice.default){
-    score+=5;
+
+    score+=
+    5;
   }
 
   return score;
@@ -826,6 +865,7 @@ function voiceScore(voice){
 function getSelectedVoice(){
 
   if(!synth){
+
     return null;
   }
 
@@ -851,9 +891,11 @@ function stopSpeech(){
 
   speechToken++;
 
-  isSpeechPaused=false;
+  isSpeechPaused=
+  false;
 
   if(synth){
+
     synth.cancel();
   }
 
@@ -917,12 +959,14 @@ function speakText(
       token!==
       speechToken
     ){
+
       return;
     }
 
     disablePauseButton();
 
     if(onEnd){
+
       onEnd();
     }
   };
@@ -934,6 +978,7 @@ function speakText(
       token!==
       speechToken
     ){
+
       return;
     }
 
@@ -998,13 +1043,14 @@ function renderStep(){
   if(
     !QUESTION.sentences.length
   ){
+
     return;
   }
 
   restoreTranscriptHome();
 
   practiceGuide.textContent=
-  currentStep===6
+  currentStep===5
   ?
   "リピート音声の正確さを点数で判定します。80点以上で合格です。このステップで合格点が出たら、リピート練習は終了です。"
   :
@@ -1021,12 +1067,14 @@ function renderStep(){
   wholePracticeResultTop.style.display=
   "none";
 
-  wholePracticeResultTop.innerHTML="";
+  wholePracticeResultTop.innerHTML=
+  "";
 
   wholePracticeResult.style.display=
   "none";
 
-  wholePracticeResult.innerHTML="";
+  wholePracticeResult.innerHTML=
+  "";
 
   [
     step1Cue,
@@ -1055,7 +1103,7 @@ function renderStep(){
   "none";
 
   transcriptSection.style.display=
-  "block";
+  "none";
 
   if(currentStep===1){
 
@@ -1111,7 +1159,9 @@ function renderStep(){
         "▶ リッスン＆リピート";
 
         listen.onclick=
-        ()=>playStep1(index);
+        ()=>playStep1(
+          index
+        );
 
         const speak=
         document.createElement(
@@ -1129,15 +1179,15 @@ function renderStep(){
           index
         );
 
-        const mobileCue=
+        const localCue=
         document.createElement(
           "div"
         );
 
-        mobileCue.className=
+        localCue.className=
         "mobile-step1-cue";
 
-        mobileCue.dataset.cueIndex=
+        localCue.dataset.cueIndex=
         String(index);
 
         const result=
@@ -1155,7 +1205,7 @@ function renderStep(){
           text,
           listen,
           speak,
-          mobileCue,
+          localCue,
           result
         );
 
@@ -1166,6 +1216,7 @@ function renderStep(){
     );
 
     refreshStep1Results();
+
     return;
   }
 
@@ -1173,9 +1224,6 @@ function renderStep(){
   "block";
 
   if(currentStep===2){
-
-    transcriptSection.style.display=
-    "none";
 
     step24Area.style.display=
     "block";
@@ -1199,31 +1247,6 @@ function renderStep(){
 
   if(currentStep===3){
 
-    transcriptSection.style.display=
-    "none";
-
-    step24Area.style.display=
-    "block";
-
-    stepDescription.textContent=
-    "ヒントを見ながら、1センテンスずつリッスン＆リピート";
-
-    hintBox.textContent=
-    QUESTION.keywords||
-    "ヒントなし";
-
-    createPracticeButtons(
-      "▶ リッスン＆リピート"
-    );
-
-    return;
-  }
-
-  if(currentStep===4){
-
-    transcriptSection.style.display=
-    "none";
-
     step24Area.style.display=
     "block";
 
@@ -1241,22 +1264,22 @@ function renderStep(){
   }
 
   if(
-    currentStep===5||
-    currentStep===6
+    currentStep===4||
+    currentStep===5
   ){
 
     repeatInstruction.style.display=
     "block";
 
     stepDescription.textContent=
-    currentStep===5
+    currentStep===4
     ?
     "全文を聞いてから、ヒントを見ながらまとめてリピート"
     :
     "全文を聞いてから、ヒントなしでまとめてリピート";
 
     hintBox.innerHTML=
-    currentStep===5
+    currentStep===4
     ?
     escapeHtml(
       QUESTION.keywords||
@@ -1286,6 +1309,9 @@ function renderStep(){
 
     }else{
 
+      transcriptSection.style.display=
+      "block";
+
       placeTranscriptForWholePractice();
     }
 
@@ -1313,10 +1339,13 @@ function createPracticeButtons(
 
     if(
       currentStep>=2&&
-      currentStep<=4
+      currentStep<=3
     ){
+
       startStep2to4();
+
     }else{
+
       startStep5to6();
     }
   };
@@ -1370,7 +1399,9 @@ function createPracticeButtons(
   );
 }
 
-function playStep1(index){
+function playStep1(
+  index
+){
 
   stopAllPractice();
   resetTranscript();
@@ -1552,12 +1583,14 @@ async function startIOSSentenceRecognition(
     "マイクを開始できませんでした。";
 
     if(useCue){
+
       finishStep1Cue(
         index
       );
     }
 
     stopIOSPrewarmMic();
+
     return;
   }
 
@@ -1588,10 +1621,12 @@ async function startIOSSentenceRecognition(
   ()=>{
 
     if(finished){
+
       return;
     }
 
-    finished=true;
+    finished=
+    true;
 
     clearTimeout(
       repeatTimer
@@ -1600,7 +1635,9 @@ async function startIOSSentenceRecognition(
     if(
       recognition===r
     ){
-      recognition=null;
+
+      recognition=
+      null;
     }
 
     stopIOSPrewarmMic();
@@ -1611,6 +1648,7 @@ async function startIOSSentenceRecognition(
       "文字起こしできませんでした。";
 
       if(useCue){
+
         finishStep1Cue(
           index
         );
@@ -1648,6 +1686,7 @@ async function startIOSSentenceRecognition(
     if(
       recognition!==r
     ){
+
       return;
     }
 
@@ -1706,6 +1745,7 @@ async function startIOSSentenceRecognition(
         .trim();
 
         if(!text){
+
           continue;
         }
 
@@ -1743,10 +1783,12 @@ async function startIOSSentenceRecognition(
   event=>{
 
     if(finished){
+
       return;
     }
 
-    finished=true;
+    finished=
+    true;
 
     clearTimeout(
       repeatTimer
@@ -1755,7 +1797,9 @@ async function startIOSSentenceRecognition(
     if(
       recognition===r
     ){
-      recognition=null;
+
+      recognition=
+      null;
     }
 
     stopIOSPrewarmMic();
@@ -1791,7 +1835,9 @@ async function startIOSSentenceRecognition(
     if(
       recognition===r
     ){
-      recognition=null;
+
+      recognition=
+      null;
     }
 
     stopIOSPrewarmMic();
@@ -1811,6 +1857,7 @@ async function startIOSSentenceRecognition(
 function stopIOSPrewarmMic(){
 
   if(!iosPrewarmStream){
+
     return;
   }
 
@@ -1868,10 +1915,12 @@ function startMobileSentenceRecognition(
   ()=>{
 
     if(finished){
+
       return;
     }
 
-    finished=true;
+    finished=
+    true;
 
     clearTimeout(
       repeatTimer
@@ -1880,7 +1929,9 @@ function startMobileSentenceRecognition(
     if(
       recognition===r
     ){
-      recognition=null;
+
+      recognition=
+      null;
     }
 
     if(!bestText){
@@ -1927,6 +1978,7 @@ function startMobileSentenceRecognition(
     if(
       recognition!==r
     ){
+
       return;
     }
 
@@ -1985,6 +2037,7 @@ function startMobileSentenceRecognition(
         .trim();
 
         if(!text){
+
           continue;
         }
 
@@ -2022,6 +2075,7 @@ function startMobileSentenceRecognition(
   event=>{
 
     if(finished){
+
       return;
     }
 
@@ -2100,6 +2154,7 @@ function startDesktopSentenceRecognition(
       finished||
       !hasSpeech
     ){
+
       return;
     }
 
@@ -2118,7 +2173,9 @@ function startDesktopSentenceRecognition(
     ){
 
       try{
+
         r.stop();
+
       }catch(e){}
 
       recognition=
@@ -2188,11 +2245,13 @@ function startDesktopSentenceRecognition(
     if(
       recognition===r
     ){
+
       recognition=
       null;
     }
 
     if(hasSpeech){
+
       finish();
     }
   };
@@ -2331,6 +2390,7 @@ function refreshStep1Results(){
       );
 
       if(!target){
+
         return;
       }
 
@@ -2357,7 +2417,8 @@ function refreshStep1Results(){
     score!==null
   ).length;
 
-  let html="";
+  let html=
+  "";
 
   if(attempted===0){
 
@@ -2428,6 +2489,7 @@ function playNextStep2to4(){
   if(
     !practiceRunning
   ){
+
     return;
   }
 
@@ -2457,6 +2519,7 @@ function playNextStep2to4(){
       if(
         !practiceRunning
       ){
+
         return;
       }
 
@@ -2479,6 +2542,7 @@ function playNextStep2to4(){
           if(
             !practiceRunning
           ){
+
             return;
           }
 
@@ -2533,15 +2597,11 @@ function startStep5to6(){
     transcriptSection.style.display=
     "none";
 
-    wholePracticeResultTop.style.display=
-    "block";
-
     wholePracticeResult.style.display=
     "block";
 
-    setWholePracticeResult(
-      "準備中です。"
-    );
+    wholePracticeResult.innerHTML=
+    "準備中です。";
 
   }else{
 
@@ -2555,6 +2615,7 @@ function startStep5to6(){
       if(
         !practiceRunning
       ){
+
         return;
       }
 
@@ -2723,6 +2784,7 @@ async function startAndroidWholeSpeechCheck(){
     ()=>{
 
       if(finished){
+
         return;
       }
 
@@ -2754,6 +2816,7 @@ async function startAndroidWholeSpeechCheck(){
         finished||
         !practiceRunning
       ){
+
         return;
       }
 
@@ -2797,8 +2860,11 @@ async function startAndroidWholeSpeechCheck(){
         SPEECH_THRESHOLD
       ){
 
-        speechStarted=
-        true;
+        if(!speechStarted){
+
+          speechStarted=
+          true;
+        }
 
         totalSpeechMs+=
         delta;
@@ -2869,7 +2935,9 @@ function stopAndroidWholeSpeechCheck(){
   if(wholeCheckSource){
 
     try{
+
       wholeCheckSource.disconnect();
+
     }catch(e){}
 
     wholeCheckSource=
@@ -2879,19 +2947,21 @@ function stopAndroidWholeSpeechCheck(){
   if(wholeCheckAnalyser){
 
     try{
+
       wholeCheckAnalyser.disconnect();
+
     }catch(e){}
 
     wholeCheckAnalyser=
     null;
   }
 
-  if(
-    wholeCheckAudioContext
-  ){
+  if(wholeCheckAudioContext){
 
     try{
+
       wholeCheckAudioContext.close();
+
     }catch(e){}
 
     wholeCheckAudioContext=
@@ -2959,6 +3029,7 @@ function startDesktopWholeRecognition(
       finished||
       !hasSpeech
     ){
+
       return;
     }
 
@@ -2977,7 +3048,9 @@ function startDesktopWholeRecognition(
     ){
 
       try{
+
         r.stop();
+
       }catch(e){}
 
       recognition=
@@ -3028,6 +3101,7 @@ function startDesktopWholeRecognition(
     );
 
     if(!candidate){
+
       return;
     }
 
@@ -3078,6 +3152,7 @@ function startDesktopWholeRecognition(
     }
 
     if(hasSpeech){
+
       finish();
     }
   };
@@ -3131,7 +3206,8 @@ function buildCurrentRecognitionText(
   results
 ){
 
-  const parts=[];
+  const parts=
+  [];
 
   for(
     let i=0;
@@ -3151,6 +3227,7 @@ function buildCurrentRecognitionText(
     .trim();
 
     if(!text){
+
       continue;
     }
 
@@ -3169,6 +3246,7 @@ function buildCurrentRecognitionText(
       normalize(text)===
       previous
     ){
+
       continue;
     }
 
@@ -3193,25 +3271,30 @@ function calculatePracticeTime(
   if(
     wordCount<=8
   ){
+
     return 4000;
   }
 
   if(
     wordCount<=14
   ){
+
     return 5000;
   }
 
   if(
     wordCount<=20
   ){
+
     return 6500;
   }
 
   return 8000;
 }
 
-function countWords(text){
+function countWords(
+  text
+){
 
   return String(
     text||
@@ -3230,6 +3313,7 @@ function stopRecognition(){
   );
 
   if(!recognition){
+
     return;
   }
 
@@ -3240,7 +3324,9 @@ function stopRecognition(){
   null;
 
   try{
+
     recognition.stop();
+
   }catch(e){}
 
   recognition=
@@ -3293,6 +3379,7 @@ function toggleSpeechPause(
     !synth||
     !synth.speaking
   ){
+
     return;
   }
 
@@ -3468,6 +3555,7 @@ function calculateSimilarity(
     !a.length||
     !b.length
   ){
+
     return 0;
   }
 
@@ -3607,12 +3695,12 @@ function restoreTranscriptHome(){
   );
 }
 
-/* Step1はPC・スマホ共通で
-   現在のセンテンス直下に表示 */
-
 function placeTranscriptForStep1(
   index
 ){
+
+  transcriptSection.style.display=
+  "block";
 
   const card=
   step1Area.querySelector(
@@ -3696,8 +3784,8 @@ window.addEventListener(
 
     }else if(
       (
-        currentStep===5||
-        currentStep===6
+        currentStep===4||
+        currentStep===5
       )&&
       !IS_ANDROID
     ){
